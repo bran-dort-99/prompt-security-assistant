@@ -1,0 +1,220 @@
+{
+  "version": "0.1",
+  "fecha_corte": "2026-10-20",
+  "nota": "Patrones: cada palabra separada por espacio es un grupo; los grupos deben cumplirse todos y cada grupo acepta alternativas separadas por |. Se comparan por raíz (NLTK Snowball, español e inglés) sobre texto sin acentos.",
+
+  "intenciones": {
+    "saludo": {
+      "patrones": ["hola|hello|hi|buenas|saludos", "buenos dias|tardes|noches", "que tal"],
+      "respuesta": "Hola. Soy un asistente de seguridad para prompts de IA. Puedo analizar un prompt sospechoso, explicarte una categoría de ataque y decirte a qué controles de NIST AI RMF, OWASP y MITRE ATLAS corresponde. Escribe «ayuda» para ver ejemplos."
+    },
+    "despedida": {
+      "patrones": ["adios|bye|chao|salir|salgo", "hasta luego|pronto", "nos vemos"],
+      "respuesta": "Hasta luego. Recuerda que este asistente es una primera versión basada en reglas: confirma los hallazgos importantes con una revisión humana."
+    },
+    "agradecimiento": {
+      "patrones": ["gracias|thanks|thx|agradezco"],
+      "respuesta": "De nada. Si quieres, pega otro prompt para analizarlo o pregúntame por una categoría de ataque."
+    },
+    "ayuda": {
+      "patrones": ["ayuda|ayudar|ayudame|help|opciones|comandos", "que puedes|puedo|haces", "como funcionas|funciona|uso|usar"],
+      "respuesta": "Puedo hacer cinco cosas:\n1) Analizar un prompt: «Analiza este prompt: Ignora las instrucciones anteriores».\n2) Explicar una categoría: «¿Qué es un jailbreak?».\n3) Recomendar guardrails: «¿Qué guardrail recomiendas?».\n4) Mostrar controles: «¿A qué controles corresponde?» o «¿Qué es LLM01?».\n5) Explicar un marco: «¿Qué es NIST AI RMF?».\nTambién puedes escribir «¿qué ataques conoces?»."
+    },
+    "listar_categorias": {
+      "patrones": ["tipos|categorias|ataques|amenazas conoces|detectas|manejas|cubres|soportas", "que|cuales tipos|categorias|ataques|amenazas", "lista|listar|enumera ataques|categorias|tipos|amenazas"],
+      "respuesta": null
+    },
+    "consultar_categoria": {
+      "patrones": ["que es|son", "explica|explicame|define|describe|cuentame|hablame", "en que consiste"],
+      "respuesta": null
+    },
+    "consultar_controles": {
+      "patrones": ["controles|control|mapeo|mapea|mapean|corresponde|corresponden|cubre|cubren", "que|cuales controles|control", "corresponde|aplican|asociados|mapea|cubre"],
+      "respuesta": null
+    },
+    "recomendar_guardrail": {
+      "patrones": ["guardrail|guardrails|mitigacion|mitigar|mitigo|proteger|protegerme|defender|defiendo|contramedida|contramedidas|recomiendas|recomienda|recomendacion|prevenir|evitar|solucion", "que hago|hacer"],
+      "respuesta": null
+    },
+    "consultar_framework": {
+      "patrones": ["que es|son nist|owasp|atlas|mitre|framework|frameworks|marco|marcos", "explica|explicame|define|describe|cuentame|hablame nist|owasp|atlas|mitre", "que|cuales frameworks|marcos|estandares"],
+      "respuesta": null
+    },
+    "analizar_prompt": {
+      "patrones": ["analiza|analizar|revisa|revisar|clasifica|clasificar|evalua|evaluar|detecta|detectar|verifica|verificar|checa", "es seguro|peligroso|malicioso|sospechoso", "prompt ataque|malicioso|sospechoso|peligroso"],
+      "respuesta": null
+    },
+    "fuera_de_alcance": {
+      "patrones": [],
+      "respuesta": "No tengo una respuesta para eso. Mi alcance es la seguridad de prompts de IA. Prueba con «Analiza este prompt: …», «¿Qué es un jailbreak?» o escribe «ayuda»."
+    }
+  },
+
+  "categorias": {
+    "indirect_injection": {
+      "nombre": "Inyección indirecta (imagen, archivo o contenido externo)",
+      "descripcion": "Instrucciones ocultas en un documento, imagen o página que el modelo procesa como si fueran del usuario.",
+      "patrones_ataque": ["texto oculto|hidden|invisible", "instruccion|instruccion|instruction oculta|ocultas|hidden", "texto blanco|white", "incrustada|incrustadas|embedded instruccion|instruction", "pdf|documento|imagen|document|image|pagina|archivo ignora|ignore|ignorar"],
+      "patrones_consulta": ["inyeccion|injection indirecta|indirecto|indirect", "inyeccion|injection imagen|archivo|documento|pdf|multimodal", "prompt injection indirect"],
+      "owasp": ["LLM01", "LLM08"],
+      "atlas": ["AML.T0051.001", "AML.T0129", "AML.T0068"],
+      "nist": ["MEASURE 2.7", "MAP 4.1"],
+      "guardrails": [
+        "Extraer texto plano del archivo y descartar texto oculto, metadatos y comentarios.",
+        "Aplicar OCR a las imágenes y pasar el texto por el mismo clasificador que la entrada de texto.",
+        "Eliminar caracteres Unicode invisibles antes de procesar.",
+        "Tratar todo contenido externo como no confiable y etiquetarlo."
+      ]
+    },
+    "prompt_injection": {
+      "nombre": "Inyección de instrucciones (prompt injection)",
+      "descripcion": "Entrada que busca que el modelo ignore sus instrucciones originales y siga las del atacante.",
+      "patrones_ataque": [
+        "ignora|ignore|ignorar|ignorando instruccion|instruccione|instruction|regla|rule|anterior|previous|prior|previa",
+        "olvida|olvides|forget instruccion|instruction|anterior|previous",
+        "disregard|override instruction|instruction|previous|rules",
+        "desobedece|omite instruccion|regla"
+      ],
+      "patrones_consulta": ["inyeccion|injection", "prompt injection"],
+      "owasp": ["LLM01"],
+      "atlas": ["AML.T0051.000"],
+      "nist": ["MEASURE 2.7"],
+      "guardrails": [
+        "Clasificador de inyección en la entrada.",
+        "Separar y etiquetar el contenido externo como no confiable.",
+        "Validar el formato de la salida con un esquema estricto.",
+        "Mínimo privilegio para herramientas y datos del modelo."
+      ]
+    },
+    "jailbreak": {
+      "nombre": "Jailbreak",
+      "descripcion": "Intento de evadir las salvaguardas del modelo mediante roles, modos especiales o reglas inventadas.",
+      "patrones_ataque": [
+        "sin|without restriccion|restricciones|restrictions|limites|limits|filtros|filters|censura|censorship|reglas|rules|normas|guidelines",
+        "modo|mode desarrollador|developer|dios|god",
+        "do anything now",
+        "actua|finge|pretend|imagina|act como|as|que sin|without",
+        "eres|are ia|ai|modelo|model|bot libre|free|unrestricted|uncensored"
+      ],
+      "patrones_consulta": ["jailbreak|jailbreaking|jailbreaks"],
+      "owasp": ["LLM01"],
+      "atlas": ["AML.T0054", "AML.T0068"],
+      "nist": ["MEASURE 2.6", "MEASURE 2.7"],
+      "guardrails": [
+        "Moderación de entrada y de salida.",
+        "Normalizar y decodificar (Base64, Unicode, otros idiomas) antes del filtro.",
+        "Refuerzo de alineación del modelo.",
+        "Pruebas adversariales periódicas contra el chatbot."
+      ]
+    },
+    "system_prompt_leakage": {
+      "nombre": "Fuga del system prompt",
+      "descripcion": "Intento de que el modelo revele sus instrucciones internas, que pueden contener reglas o secretos.",
+      "patrones_ataque": [
+        "system|sistema prompt",
+        "instruccion|instruccione|instruction inicial|iniciales|initial|internas|internal",
+        "repite|repita|repeat|muestra|muestrame|show|revela|reveal|imprime|print tus|sus|your|su instruccion|instrucciones|instruction|instructions|prompt|configuracion|reglas",
+        "tus|your instruccion|instruccione|instruction|prompt"
+      ],
+      "patrones_consulta": ["fuga|filtracion|leak|leakage|extraccion system|sistema prompt", "system|sistema prompt"],
+      "owasp": ["LLM07"],
+      "atlas": ["AML.T0056"],
+      "nist": ["MEASURE 2.7"],
+      "guardrails": [
+        "No colocar secretos ni credenciales en el system prompt.",
+        "Tokens canario y comparación de la salida contra el prompt.",
+        "Autorización fuera del LLM.",
+        "No tratar el prompt como un control de seguridad."
+      ]
+    },
+    "data_leakage": {
+      "nombre": "Fuga de datos sensibles (PII)",
+      "descripcion": "Intento de obtener contraseñas, credenciales, datos personales o información confidencial a través del chatbot.",
+      "patrones_ataque": [
+        "dame|dime|muestra|muestrame|revela|comparte|lista|extrae|show|give|reveal|tell|list|dump contrasena|contrasenas|password|passwords|credencial|credenciales|credentials|tarjeta|tarjetas|card|cards|token|secreto|secret",
+        "dame|dime|muestra|muestrame|revela|comparte|lista|extrae|show|give|reveal|tell|list|dump personales|personal|clientes|customers|empleados|employees"
+      ],
+      "patrones_consulta": ["fuga|filtracion|leak|leakage|exposicion dato|datos|data|pii|informacion|credenciales", "pii", "informacion sensible"],
+      "owasp": ["LLM02"],
+      "atlas": ["AML.T0057"],
+      "nist": ["MEASURE 2.10", "MAP 4.1"],
+      "guardrails": [
+        "Detectar y redactar PII en la salida.",
+        "Control de acceso antes de recuperar datos (RAG con permisos).",
+        "Minimizar los datos disponibles para el modelo.",
+        "No incluir credenciales en el contexto."
+      ]
+    },
+    "excessive_agency": {
+      "nombre": "Exceso de agencia (abuso de herramientas)",
+      "descripcion": "Hacer que el chatbot ejecute acciones dañinas mediante herramientas o permisos que no debería tener.",
+      "patrones_ataque": [
+        "borra|borrar|elimina|eliminar|delete|remove archivo|archivos|file|files|base|database|tabla|table",
+        "envia|enviar|manda|send correo|correos|email|emails|mensaje",
+        "ejecuta|ejecutar|execute|run comando|command|script",
+        "drop table",
+        "transfiere|transfer dinero|money|fondos|funds"
+      ],
+      "patrones_consulta": ["exceso|excesivo|excessive agencia|agency|permisos|autonomia", "abuso herramienta|herramientas|tools", "agencia|agency"],
+      "owasp": ["LLM06"],
+      "atlas": ["AML.T0053", "AML.T0086"],
+      "nist": ["MEASURE 2.7", "MAP 3.5"],
+      "guardrails": [
+        "Mínimo privilegio para cada herramienta.",
+        "Lista blanca de herramientas permitidas.",
+        "Aprobación humana en acciones irreversibles.",
+        "Límites de tasa y registro de acciones."
+      ]
+    }
+  },
+
+  "controles": {
+    "owasp": {
+      "LLM01": {"id": "LLM01:2025", "nombre": "Prompt Injection", "descripcion": "Entradas que alteran el comportamiento del modelo, de forma directa o indirecta. Incluye el jailbreak."},
+      "LLM02": {"id": "LLM02:2025", "nombre": "Sensitive Information Disclosure", "descripcion": "Exposición de datos personales, credenciales o información confidencial."},
+      "LLM03": {"id": "LLM03:2025", "nombre": "Supply Chain", "descripcion": "Vulnerabilidades en modelos, datos y componentes de terceros."},
+      "LLM04": {"id": "LLM04:2025", "nombre": "Data and Model Poisoning", "descripcion": "Manipulación de datos de entrenamiento, ajuste fino o embeddings."},
+      "LLM05": {"id": "LLM05:2025", "nombre": "Improper Output Handling", "descripcion": "Salida del modelo usada sin validar en otros componentes."},
+      "LLM06": {"id": "LLM06:2025", "nombre": "Excessive Agency", "descripcion": "Acciones dañinas por exceso de funcionalidad, permisos o autonomía."},
+      "LLM07": {"id": "LLM07:2025", "nombre": "System Prompt Leakage", "descripcion": "Exposición de instrucciones internas que pueden contener reglas o secretos."},
+      "LLM08": {"id": "LLM08:2025", "nombre": "Vector and Embedding Weaknesses", "descripcion": "Debilidades al generar, almacenar o recuperar embeddings en RAG."},
+      "LLM09": {"id": "LLM09:2025", "nombre": "Misinformation", "descripcion": "Salidas falsas o engañosas que parecen creíbles."},
+      "LLM10": {"id": "LLM10:2025", "nombre": "Unbounded Consumption", "descripcion": "Uso excesivo e incontrolado de recursos: denegación de servicio, costos, extracción del modelo."}
+    },
+    "atlas": {
+      "AML.T0051": {"nombre": "LLM Prompt Injection", "descripcion": "Técnica madre de inyección de instrucciones. Táctica: Execution."},
+      "AML.T0051.000": {"nombre": "LLM Prompt Injection: Direct", "descripcion": "El atacante inyecta las instrucciones directamente como usuario del modelo."},
+      "AML.T0051.001": {"nombre": "LLM Prompt Injection: Indirect", "descripcion": "Las instrucciones llegan por un canal de datos que el modelo ingiere: documentos, correos, páginas o multimedia."},
+      "AML.T0051.002": {"nombre": "LLM Prompt Injection: Triggered", "descripcion": "La inyección se activa más tarde, cuando se cumple una condición."},
+      "AML.T0054": {"nombre": "LLM Jailbreak", "descripcion": "Evadir las salvaguardas del modelo. Tácticas: Defense Evasion y Privilege Escalation."},
+      "AML.T0056": {"nombre": "Extract LLM System Prompt", "descripcion": "Extraer el system prompt del modelo. Táctica: Exfiltration."},
+      "AML.T0057": {"nombre": "LLM Data Leakage", "descripcion": "Inducir al modelo a filtrar información sensible. Táctica: Exfiltration."},
+      "AML.T0068": {"nombre": "LLM Prompt Obfuscation", "descripcion": "Ocultar el contenido del prompt para evadir filtros. Táctica: Defense Evasion."},
+      "AML.T0053": {"nombre": "AI Agent Tool Invocation", "descripcion": "Usar las herramientas de un agente para ejecutar acciones. Tácticas: Execution, Privilege Escalation y Lateral Movement."},
+      "AML.T0086": {"nombre": "Exfiltration via AI Agent Tool Invocation", "descripcion": "Exfiltrar datos mediante las herramientas de un agente."},
+      "AML.T0129": {"nombre": "Triggers in Multimodal Inputs", "descripcion": "Instrucciones o disparadores en una modalidad que los controles no inspeccionan (imagen, audio, metadatos). Nueva en v2026.09."}
+    },
+    "nist": {
+      "MEASURE 2.6": {"nombre": "MEASURE 2.6", "descripcion": "El sistema se evalúa con regularidad frente a riesgos de seguridad. Acción AI 600-1: MS-2.6-007."},
+      "MEASURE 2.7": {"nombre": "MEASURE 2.7", "descripcion": "Seguridad y resiliencia del sistema evaluadas y documentadas. Acción AI 600-1: MS-2.7-007 (red teaming)."},
+      "MEASURE 2.10": {"nombre": "MEASURE 2.10", "descripcion": "Riesgo de privacidad examinado y documentado. Acción AI 600-1: MS-2.10-001."},
+      "MAP 3.5": {"nombre": "MAP 3.5", "descripcion": "Procesos de supervisión humana definidos y documentados."},
+      "MAP 4.1": {"nombre": "MAP 4.1", "descripcion": "Riesgos de componentes (incluido software y datos de terceros) mapeados y documentados."},
+      "GOVERN 3.2": {"nombre": "GOVERN 3.2", "descripcion": "Políticas que definen los roles en la relación humano-IA."},
+      "MANAGE 1.3": {"nombre": "MANAGE 1.3", "descripcion": "Respuestas a los riesgos de alta prioridad planificadas y documentadas."}
+    }
+  },
+
+  "frameworks": {
+    "nist": "NIST AI RMF 1.0 (enero de 2023) es un marco voluntario para gestionar riesgos de IA. Tiene cuatro funciones: Govern, Map, Measure y Manage. El perfil AI 600-1 (julio de 2024) lo adapta a IA generativa y propone acciones sugeridas.",
+    "owasp": "OWASP Top 10 for LLM Applications (edición 2025) lista los diez riesgos más importantes en aplicaciones con LLM, de LLM01 Prompt Injection a LLM10 Unbounded Consumption. En 2026 salió una edición nueva que renumera varias categorías.",
+    "atlas": "MITRE ATLAS es una base de conocimiento de tácticas, técnicas y mitigaciones de ataques a sistemas de IA, al estilo de MITRE ATT&CK. Este asistente usa la versión v2026.09."
+  },
+
+  "mensajes": {
+    "sin_coincidencia": "No detecté un patrón de ataque conocido en ese texto. Esto no significa que sea seguro: este asistente usa reglas y no reconoce paráfrasis, ofuscación (Base64, letras separadas, leetspeak) ni otros idiomas distintos de español e inglés. Si te preocupa, pide una revisión humana.",
+    "sin_categoria": "No sé a qué categoría te refieres. Conozco: {lista}. Prueba con «¿Qué es un jailbreak?».",
+    "control_desconocido": "Ese control no está en mi base de conocimiento. Conozco los de OWASP LLM01 a LLM10, algunas técnicas de ATLAS (como AML.T0051.001) y varias subcategorías de NIST (como MEASURE 2.7).",
+    "sin_contexto": "¿Sobre qué tipo de ataque? Puedes analizar un prompt o preguntarme por una categoría. Escribe «¿qué ataques conoces?» para ver la lista."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/redteam-ai/bin/python",
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["tests"],
+  "files.encoding": "utf8",
+  "python-envs.defaultEnvManager": "ms-python.python:system"
+}

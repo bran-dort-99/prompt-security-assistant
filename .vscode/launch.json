@@ -1,0 +1,9 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    { "name": "Chat interactivo", "type": "debugpy", "request": "launch", "program": "${workspaceFolder}/main.py", "console": "integratedTerminal" },
+    { "name": "13 conversaciones", "type": "debugpy", "request": "launch", "module": "tests.conversaciones", "console": "integratedTerminal" },
+    { "name": "Batería de prompts", "type": "debugpy", "request": "launch", "module": "tests.bateria", "console": "integratedTerminal" },
+    { "name": "Generar evidencias", "type": "debugpy", "request": "launch", "program": "${workspaceFolder}/run_evidencias.py", "console": "integratedTerminal" }
+  ]
+}

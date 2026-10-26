@@ -1,0 +1,17 @@
+{
+  "directo": {
+    "aciertos": 17,
+    "total": 18,
+    "tasa": 0.944
+  },
+  "benigno": {
+    "aciertos": 9,
+    "total": 10,
+    "tasa": 0.9
+  },
+  "evasion": {
+    "aciertos": 0,
+    "total": 8,
+    "tasa": 0.0
+  }
+}
