@@ -176,14 +176,14 @@ Contenido mínimo para "Altamente competente":
 ## 9. Orden de trabajo y checklist
 
 **Fase 0 — Preparación (workspace)**
-- [ ] Confirmar D1 con Brandon. *(pendiente: la elección llegó sin marcar; se pregunta antes de la Fase 3)*
+- [x] Confirmar D1 con Brandon. *(confirmado 11-nov: se acepta foto_natural / texto_incrustado / codigo_qr)*
 - [x] Rama `avance-2`; crear la estructura; actualizar requirements y `.gitignore` (`data/imagenes/`, `data/intenciones/raw/`, `models/*.pt` > 25 MB).
 - [x] Mover las utilidades de NLP de `chatbot.py` a `src/nlp/preprocesamiento.py` sin romper las pruebas.
 
 **Fase 1 — NLP (workspace + Colab, jue 12)**
-- [ ] `propios_es_en.csv` (todas las etiquetas propias, es/en).
-- [ ] `dataset_texto.py` (descarga en Colab; en el workspace, funcionar solo con los propios).
-- [ ] `clasificador_texto.py` + pruebas.
+- [x] `propios_es_en.csv` (todas las etiquetas propias, es/en).
+- [x] `dataset_texto.py` (descarga en Colab; en el workspace, funcionar solo con los propios).
+- [x] `clasificador_texto.py` + pruebas.
 - [ ] Notebook 01 en Colab → métricas, figuras, `.joblib` → commit.
 
 **Fase 2 — Chatbot híbrido (jue 12)**
@@ -206,6 +206,8 @@ Contenido mínimo para "Altamente competente":
 ---
 
 > Nota Fase 0: en el workspace `nltk.download('stopwords')` está bloqueado; `preprocesamiento.py` usa el corpus si existe y una lista de respaldo si no. En Colab se usa el corpus real (reportar cuál se usó en el informe).
+
+> Nota Fase 1: la CV del plan se hace **agrupada por `plantilla_id`**; sin agrupar daba F1 0.96 vs 0.56 en test (fuga de plantillas). Documentar en el informe. Notebook 01 creado; falta ejecutarlo en Colab y commitear sus artefactos.
 
 ## 10. Riesgos y planes B
 | Riesgo | Plan B |
