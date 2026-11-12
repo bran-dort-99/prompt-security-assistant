@@ -6,3 +6,9 @@ __pycache__/
 .DS_Store
 .redteam-ai/
 redteam-ai/
+
+# Avance 2
+data/imagenes/
+data/intenciones/raw/
+models/*.pt
+!models/cnn_efficientnet_b0.pt

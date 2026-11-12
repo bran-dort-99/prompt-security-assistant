@@ -15,18 +15,13 @@ from __future__ import annotations
 
 import json
 import re
-import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
-from nltk.stem import SnowballStemmer
-from nltk.tokenize import RegexpTokenizer
+from src.nlp.preprocesamiento import _EN, _ES, _TOKENIZADOR, normalizar
 
 KB_POR_DEFECTO = Path(__file__).resolve().parent.parent / "data" / "knowledge_base.json"
 
-_ES = SnowballStemmer("spanish")
-_EN = SnowballStemmer("english")
-_TOKENIZADOR = RegexpTokenizer(r"\w+")
 
 # Intenciones de cortesía: pierden frente a un ataque detectado en el mismo mensaje.
 CORTESIA = {"saludo", "despedida", "agradecimiento"}
@@ -38,12 +33,6 @@ RE_ATLAS = re.compile(r"\baml\.?\s?([tm])(\d{4})(?:\.(\d{3}))?\b")
 RE_NIST = re.compile(r"\b(measure|map|govern|manage)\s?(\d{1,2}\.\d{1,2})\b")
 RE_CITA = re.compile(r"[«“\"](.+?)[»”\"]", re.S)
 RE_DAN = re.compile(r"\bDAN\b")  # distingue el jailbreak «DAN» del verbo «dan»
-
-
-def normalizar(texto: str) -> str:
-    """Minúsculas y sin acentos (ñ pasa a n)."""
-    base = unicodedata.normalize("NFKD", texto.lower())
-    return "".join(c for c in base if not unicodedata.combining(c))
 
 
 def raices(texto: str) -> set[str]:
