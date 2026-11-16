@@ -219,3 +219,8 @@ Contenido mínimo para "Altamente competente":
 | EasyOCR demasiado lento en CPU | Usar `gpu=True` en Colab; en local, limitar el lado mayor a 1,024 px. |
 | Las conversaciones del Avance 1 cambian de comportamiento | El umbral de respaldo a reglas (D5) se sube; documentar los casos que cambian. |
 | Sin tiempo para ResNet50 | Basta con EfficientNet-B0: la rúbrica pide "ResNet50 **o** EfficientNet". |
+
+## Recorte de alcance (15-nov, 20:41)
+- Se omite el experimento B (transfer learning vs. ResNet50 / ablación de la CNN).
+- Se omiten las fotos de QR de ataque tomadas con celular. La cascada con QR malicioso se demuestra con los 5 PNG generados en `data/imagenes_reales/qr_hoja/` (imágenes digitales, no fotografías) y se declara como limitación.
+- Las métricas reales de la CNN incluyen solo QR benignos (pantalla, caja, receta, wifi, recibo, ticket).
