@@ -127,6 +127,8 @@ La CNN distingue tres clases: `foto_natural`, `texto_incrustado` y `codigo_qr`. 
 | Cabeza nueva | `Dropout(0.3)` → `Linear(1280, 3)` | 3,843 |
 | Salida | *Softmax* sobre 3 clases: `codigo_qr`, `foto_natural`, `texto_incrustado` | – |
 
+![Arquitectura del clasificador visual: EfficientNet-B0 con transferencia de aprendizaje y estado de entrenamiento de cada bloque](figuras/arquitectura_cnn.png){width=100%}
+
 **Datos de entrenamiento.** 1,260 imágenes en entrenamiento (420 por clase), 270 en validación y 270 en prueba sintética (sección 5), más 22 fotos reales solo para evaluación. Las clases están balanceadas; aun así la pérdida usa pesos por clase inversamente proporcionales a la frecuencia.
 
 **Aumento de datos.** Entrenamiento: `RandomResizedCrop(224, escala 0.7–1.0)` y `ColorJitter` leve (brillo 0.2, contraste 0.2, saturación 0.1), **sin volteo horizontal** porque invertiría el texto y los QR. Validación y prueba: `Resize(256)` + `CenterCrop(224)`.
@@ -147,6 +149,8 @@ Otros parámetros: lote de 32, pérdida de entropía cruzada ponderada, semilla 
 **Evaluación.** Se calculan exactitud, precisión, *recall* y F1 por clase, F1 macro y matriz de confusión, tanto en la prueba sintética como en las fotos reales (sección 8.3).
 
 # 7. Integración multimodal
+
+![Cascada multimodal: de la imagen a la respuesta del asistente](figuras/cascada_multimodal.png){width=100%}
 
 `AnalizadorImagen.analizar(ruta)` (`src/multimodal.py`):
 
