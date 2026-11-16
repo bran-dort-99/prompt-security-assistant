@@ -1,0 +1,11 @@
+umbral,directo_aciertos,directo_aciertos_binarios,benigno_aciertos,benigno_aciertos_binarios,evasion_aciertos,evasion_aciertos_binarios
+0.2,15,18,8,8,4,5
+0.25,15,18,8,8,4,5
+0.3,15,18,8,8,4,5
+0.35,16,18,9,9,4,5
+0.4,16,18,9,9,3,4
+0.45,17,18,9,9,3,3
+0.5,18,18,9,9,2,2
+0.55,18,18,9,9,1,1
+0.6,17,17,9,9,1,1
+0.7,17,17,9,9,0,0
