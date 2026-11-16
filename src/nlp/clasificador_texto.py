@@ -105,6 +105,14 @@ def predecir(texto: str, modelo: Pipeline | None = None) -> tuple[str, float, di
 def matriz_experimentos(train: pd.DataFrame, folds: int = 5) -> pd.DataFrame:
     # Agrupada por plantilla: sin esto la CV filtra plantillas entre folds e infla el F1 (0.96 vs ~0.56 en test).
     cv = StratifiedGroupKFold(n_splits=folds, shuffle=True, random_state=SEMILLA)
+    # BoW (conteos sin normalizar) + SVC converge lento; el aviso es esperado y no afecta la comparación.
+    import os
+    import warnings
+
+    from sklearn.exceptions import ConvergenceWarning
+
+    warnings.filterwarnings("ignore", category=ConvergenceWarning)
+    os.environ["PYTHONWARNINGS"] = "ignore::sklearn.exceptions.ConvergenceWarning"  # hereda a los procesos de n_jobs
     filas = []
     for rep in REPRESENTACIONES:
         for clf in CLASIFICADORES:
