@@ -1,0 +1,202 @@
+{
+  "dispositivo": "mps",
+  "backbone": "efficientnet_b0",
+  "segundos_totales": 257,
+  "historial": [
+    {
+      "etapa": 1,
+      "epoca": 1,
+      "train_loss": 0.8560576997106037,
+      "train_acc": 0.6587301587301587,
+      "val_loss": 0.6461954496524952,
+      "val_acc": 0.8444444444444444,
+      "val_f1": 0.8441938317843437,
+      "seg": 30.0
+    },
+    {
+      "etapa": 1,
+      "epoca": 2,
+      "train_loss": 0.572847868241961,
+      "train_acc": 0.8428571428571429,
+      "val_loss": 0.5248361649336638,
+      "val_acc": 0.8481481481481481,
+      "val_f1": 0.8489139111416081,
+      "seg": 30.8
+    },
+    {
+      "etapa": 1,
+      "epoca": 3,
+      "train_loss": 0.4772289600637224,
+      "train_acc": 0.8547619047619047,
+      "val_loss": 0.49188038419794156,
+      "val_acc": 0.8777777777777778,
+      "val_f1": 0.8779369138959932,
+      "seg": 30.9
+    },
+    {
+      "etapa": 2,
+      "epoca": 1,
+      "train_loss": 0.3703776914922018,
+      "train_acc": 0.8833333333333333,
+      "val_loss": 0.34219927257961696,
+      "val_acc": 0.9,
+      "val_f1": 0.9004918496946163,
+      "seg": 29.9
+    },
+    {
+      "etapa": 2,
+      "epoca": 2,
+      "train_loss": 0.2618734884829748,
+      "train_acc": 0.9182539682539682,
+      "val_loss": 0.27652753944750186,
+      "val_acc": 0.9148148148148149,
+      "val_f1": 0.9151629287222507,
+      "seg": 31.4
+    },
+    {
+      "etapa": 2,
+      "epoca": 3,
+      "train_loss": 0.1944675882657369,
+      "train_acc": 0.9388888888888889,
+      "val_loss": 0.25732814647533275,
+      "val_acc": 0.9111111111111111,
+      "val_f1": 0.9119792885104259,
+      "seg": 30.1
+    },
+    {
+      "etapa": 2,
+      "epoca": 4,
+      "train_loss": 0.17133621831261922,
+      "train_acc": 0.9444444444444444,
+      "val_loss": 0.24987201028399997,
+      "val_acc": 0.9148148148148149,
+      "val_f1": 0.9156945021465172,
+      "seg": 30.1
+    },
+    {
+      "etapa": 2,
+      "epoca": 5,
+      "train_loss": 0.13446037991652413,
+      "train_acc": 0.9571428571428572,
+      "val_loss": 0.24158672712467336,
+      "val_acc": 0.9148148148148149,
+      "val_f1": 0.9155858793221431,
+      "seg": 30.0
+    }
+  ],
+  "test_sintetico": {
+    "accuracy": 0.9148148148148149,
+    "f1_macro": 0.9156872362574479,
+    "por_clase": {
+      "codigo_qr": {
+        "precision": 1.0,
+        "recall": 0.9,
+        "f1-score": 0.9473684210526315,
+        "support": 90.0
+      },
+      "foto_natural": {
+        "precision": 0.8301886792452831,
+        "recall": 0.9777777777777777,
+        "f1-score": 0.8979591836734694,
+        "support": 90.0
+      },
+      "texto_incrustado": {
+        "precision": 0.9397590361445783,
+        "recall": 0.8666666666666667,
+        "f1-score": 0.9017341040462428,
+        "support": 90.0
+      }
+    },
+    "matriz": [
+      [
+        81,
+        6,
+        3
+      ],
+      [
+        0,
+        88,
+        2
+      ],
+      [
+        0,
+        12,
+        78
+      ]
+    ]
+  },
+  "test_real": {
+    "n": 22,
+    "accuracy": 0.7727272727272727,
+    "f1_macro": 0.7388888888888889,
+    "por_clase": {
+      "codigo_qr": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1-score": 0.6666666666666666,
+        "support": 2.0
+      },
+      "foto_natural": {
+        "precision": 0.75,
+        "recall": 0.75,
+        "f1-score": 0.75,
+        "support": 8.0
+      },
+      "texto_incrustado": {
+        "precision": 0.7692307692307693,
+        "recall": 0.8333333333333334,
+        "f1-score": 0.8,
+        "support": 12.0
+      }
+    },
+    "matriz": [
+      [
+        1,
+        0,
+        1
+      ],
+      [
+        0,
+        6,
+        2
+      ],
+      [
+        0,
+        2,
+        10
+      ]
+    ],
+    "errores": [
+      {
+        "archivo": "texto_incrustado_ataque_pantalla_01.jpg",
+        "real": "texto_incrustado",
+        "predicha": "foto_natural",
+        "prob": 0.525
+      },
+      {
+        "archivo": "texto_incrustado_ataque_pantalla_04.jpg",
+        "real": "texto_incrustado",
+        "predicha": "foto_natural",
+        "prob": 0.66
+      },
+      {
+        "archivo": "foto_natural_texto_incidental_02.jpg",
+        "real": "foto_natural",
+        "predicha": "texto_incrustado",
+        "prob": 0.989
+      },
+      {
+        "archivo": "codigo_qr_dificil_caja_01.jpg",
+        "real": "codigo_qr",
+        "predicha": "texto_incrustado",
+        "prob": 0.825
+      },
+      {
+        "archivo": "foto_natural_texto_incidental_04.jpg",
+        "real": "foto_natural",
+        "predicha": "texto_incrustado",
+        "prob": 0.995
+      }
+    ]
+  }
+}
