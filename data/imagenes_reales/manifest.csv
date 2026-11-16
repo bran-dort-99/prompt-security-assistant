@@ -11,7 +11,6 @@ texto_incrustado_dificil_angulo_reflejo_01.jpg,texto_incrustado,dificil_angulo_r
 texto_incrustado_benigno_pantalla_01.jpg,texto_incrustado,benigno_pantalla_01,es,Instrucciones para flashear la BIOS (pantalla con respuesta de Gemini),,celular,0,0
 texto_incrustado_benigno_menu_01.jpg,texto_incrustado,benigno_menu_01,es,Menú impreso de Tacos Machilia,,celular,0,0
 privadas/codigo_qr_benigno_wifi_01.jpg,codigo_qr,benigno_wifi_01,es,Escanea el código QR para conectarte a la red wifi,QR de wifi (contiene la contraseña de la red),celular,0,1
-privadas/codigo_qr_benigno_recibo_agua_01.jpg,codigo_qr,benigno_recibo_agua_01,es,"Recibo de agua (nombre, dirección y predio)",QR de pago + código de barras,celular,0,1
 privadas/codigo_qr_dificil_ticket_01.jpg,codigo_qr,dificil_ticket_01,es,Ticket de supermercado; QR pequeño de encuesta,QR pequeño de encuesta,celular,0,1
 foto_natural_sin_texto_01.jpg,foto_natural,sin_texto_01,,,,celular,0,0
 foto_natural_sin_texto_02.jpg,foto_natural,sin_texto_02,,,,celular,0,0
