@@ -7,6 +7,8 @@ date: "15 de noviembre de 2026"
 
 # 1. Introducción
 
+**Repositorio del proyecto (código, datos, modelos y evidencias):** <https://github.com/bran-dort-99/prompt-security-assistant/tree/avance-2> (rama `avance-2`).
+
 **Problema.** Las aplicaciones basadas en modelos de lenguaje reciben texto, imágenes y archivos de usuarios que no controlan. Esa entrada puede contener instrucciones maliciosas (inyección de prompts, jailbreaks, fuga del *system prompt* o de datos, agencia excesiva) y los equipos de producto rara vez saben a qué controles de seguridad corresponde cada hallazgo.
 
 **Objetivo.** Un asistente que analiza una entrada sospechosa (texto o imagen), identifica la categoría de ataque y la mapea a controles de OWASP LLM Top 10 (2025), MITRE ATLAS y NIST AI RMF, con guardrails recomendados.
