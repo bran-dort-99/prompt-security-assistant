@@ -116,9 +116,35 @@ La CNN distingue tres clases: `foto_natural`, `texto_incrustado` y `codigo_qr`. 
 
 # 6. Arquitectura y desarrollo del clasificador visual
 
-**Modelo.** EfficientNet-B0 preentrenada en ImageNet (Tan y Le, 2019) con una cabeza nueva `Dropout(0.3) + Linear(1280, 3)`. Se eligió sobre ResNet50 (He et al., 2016): entrena más rápido y sus pesos (~16 MB) caben en el repositorio. Kornblith et al. (2019) respaldan la transferencia desde ImageNet.
+**Alternativa elegida.** Entre las alternativas del curso (ResNet50 y EfficientNet) se eligió **EfficientNet-B0** (Tan y Le, 2019), preentrenada en ImageNet. Razones: tiene ~4 M de parámetros frente a ~25 M de ResNet50 (He et al., 2016), entrena más rápido en un portátil sin GPU dedicada y su archivo de pesos (16 MB) cabe en el repositorio. El código admite ResNet50 (`--backbone resnet50`), pero **no se entrenó** por recorte de alcance. La transferencia desde ImageNet se apoya en Kornblith et al. (2019).
 
-**Entrenamiento en dos etapas.** Etapa 1: *backbone* congelado, AdamW con *learning rate* 1e-3, 3 épocas. Etapa 2: se descongelan los dos últimos bloques, *learning rate* 1e-4, hasta 5 épocas con parada temprana (paciencia 3) sobre el F1 macro de validación. Pérdida de entropía cruzada con pesos de clase, semillas fijas. Transformaciones de entrenamiento: `RandomResizedCrop(224, scale=(0.7, 1))` y `ColorJitter` leve, **sin volteo horizontal** (invierte texto y QR); validación y prueba con `Resize(256)` + `CenterCrop(224)` y normalización de ImageNet. Dispositivo: MacBook Air M3 con MPS; el entrenamiento completo (8 épocas) tardó **257 s**. Parámetros: lote de 32, semilla 42.
+**Arquitectura.**
+
+| Bloque | Descripción | Parámetros |
+|---|---|---:|
+| Entrada | Imagen RGB de 224 × 224, normalizada con la media y la desviación de ImageNet | – |
+| *Backbone* | `features` de EfficientNet-B0: 9 bloques convolucionales (MBConv con *squeeze-and-excitation*), agrupación global promedio → vector de 1,280 | ~4.0 M |
+| Cabeza nueva | `Dropout(0.3)` → `Linear(1280, 3)` | 3,843 |
+| Salida | *Softmax* sobre 3 clases: `codigo_qr`, `foto_natural`, `texto_incrustado` | – |
+
+**Datos de entrenamiento.** 1,260 imágenes en entrenamiento (420 por clase), 270 en validación y 270 en prueba sintética (sección 5), más 22 fotos reales solo para evaluación. Las clases están balanceadas; aun así la pérdida usa pesos por clase inversamente proporcionales a la frecuencia.
+
+**Aumento de datos.** Entrenamiento: `RandomResizedCrop(224, escala 0.7–1.0)` y `ColorJitter` leve (brillo 0.2, contraste 0.2, saturación 0.1), **sin volteo horizontal** porque invertiría el texto y los QR. Validación y prueba: `Resize(256)` + `CenterCrop(224)`.
+
+**Entrenamiento en dos etapas** (transferencia de aprendizaje con ajuste fino parcial):
+
+| | Etapa 1 | Etapa 2 |
+|---|---|---|
+| Capas entrenables | solo la cabeza (3,843 parámetros) | cabeza y los 2 últimos bloques del *backbone* (1.13 M) |
+| Optimizador | AdamW, *learning rate* 1e-3 | AdamW, *learning rate* 1e-4 |
+| Épocas | 3 | hasta 5, con parada temprana (paciencia 3) |
+| Criterio | – | F1 macro en validación |
+
+Otros parámetros: lote de 32, pérdida de entropía cruzada ponderada, semilla 42. Se conserva el estado con mayor F1 macro de validación (no el de la última época). El entrenamiento completo, de 8 épocas, tardó **257 s** en un MacBook Air M3 con MPS (~30 s por época).
+
+**Por qué dos etapas.** Con el *backbone* congelado la cabeza aprende primero sobre rasgos genéricos de ImageNet (F1 de validación 0.844 → 0.878). Descongelar los últimos bloques, con un *learning rate* 10 veces menor para no destruir lo preentrenado, adapta los rasgos de alto nivel a texto y QR y sube el F1 hasta 0.916.
+
+**Evaluación.** Se calculan exactitud, precisión, *recall* y F1 por clase, F1 macro y matriz de confusión, tanto en la prueba sintética como en las fotos reales (sección 8.3).
 
 # 7. Integración multimodal
 
