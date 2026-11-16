@@ -102,7 +102,7 @@ def evaluar_dl(m, dl, clases, dev):
 
 
 def metricas(ys, ps, clases):
-    rep = classification_report(ys, ps, target_names=clases, output_dict=True, zero_division=0)
+    rep = classification_report(ys, ps, labels=list(range(len(clases))), target_names=clases, output_dict=True, zero_division=0)
     return {"accuracy": rep["accuracy"], "f1_macro": rep["macro avg"]["f1-score"], "por_clase": {c: rep[c] for c in clases}, "matriz": confusion_matrix(ys, ps, labels=range(len(clases))).tolist()}
 
 
