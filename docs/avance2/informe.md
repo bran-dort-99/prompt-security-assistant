@@ -106,17 +106,17 @@ El umbral inicial de 0.45 era demasiado alto: las probabilidades calibradas de u
 
 La CNN distingue tres clases: `foto_natural`, `texto_incrustado` y `codigo_qr`. La clase es el **vector**, no la intención: el texto renderizado mezcla ataques y textos benignos.
 
-**Imágenes sintéticas** (`src/vision/generar_imagenes.py`). Fotos de COCO `val2017` como fondos y como `foto_natural`, con IDs separados por *split* para evitar fugas. [[CNN_N_SINTETICAS]] imágenes por clase: texto renderizado con distintas fuentes (TTF del sistema), tamaños, colores, soportes (texto plano, nota adhesiva, burbuja de chat, letrero, pasos numerados estilo FigStep), rotación ±15°, perspectiva, bajo contraste (ΔRGB ≤ 25) en ~15 % y compresión JPEG; y códigos QR con cargas útiles (URL benigna, URL sospechosa, texto de inyección, Base64) pegados con escala, rotación y perspectiva.
+**Imágenes sintéticas** (`src/vision/generar_imagenes.py`). Fotos de COCO `val2017` como fondos y como `foto_natural`, con IDs separados por *split* para evitar fugas. **600 imágenes por clase (420 entrenamiento, 90 validación, 90 prueba; 1,800 en total)**: texto renderizado con distintas fuentes (TTF del sistema), tamaños, colores, soportes (texto plano, nota adhesiva, burbuja de chat, letrero, pasos numerados estilo FigStep), rotación ±15°, perspectiva, bajo contraste (ΔRGB ≤ 25) en ~15 % y compresión JPEG; y códigos QR con cargas útiles (URL benigna, URL sospechosa, texto de inyección, Base64) pegados con escala, rotación y perspectiva.
 
 *Medidas anti-atajos.* Las tres clases comparten el mismo pool de fondos, el mismo tamaño final (lado menor = 256 px) y el mismo rango de calidad JPEG. El *split* `test_sintetico` usa **fuentes tipográficas y fondos que no se vieron en entrenamiento**. Las fotos COCO con letreros se aceptan como ruido de etiqueta en `foto_natural`.
 
-**Imágenes reales** (`data/imagenes_reales/`, 20 fotos al momento de este informe): [[N_REALES]] fotos con celular (fotos sin texto, fotos con texto incidental, texto benigno en pantalla y en papel, QR) y 9 imágenes de ataque **generadas con IA** (4 en pantalla, 3 en papel, 2 difíciles de bajo contraste y de ángulo), declaradas como tales (`fuente=generada_ia` en el manifiesto). Las fotos con datos personales se excluyen del repositorio público.
+**Imágenes reales** (`data/imagenes_reales/`): **22 imágenes públicas**: 13 fotos tomadas con celular (fotos sin texto, fotos con texto incidental, texto benigno en pantalla y en cartel, QR en pantalla y en una caja de juego) y 9 imágenes de ataque **generadas con IA** (4 en pantalla, 3 en papel y 2 difíciles de bajo contraste y de ángulo; `fuente=generada_ia` en el manifiesto, y se declaran así). Distribución: 12 `texto_incrustado`, 8 `foto_natural` y **solo 2 `codigo_qr`**. Otras 3 fotos con datos personales (Wi-Fi, ticket y una receta médica) se conservaron **fuera del repositorio y fuera de la evaluación**. Es una muestra pequeña, pensada como prueba de humo en imágenes no sintéticas y no como estimación estadística; la ampliaremos en la siguiente entrega.
 
 # 6. Arquitectura y desarrollo del clasificador visual
 
 **Modelo.** EfficientNet-B0 preentrenada en ImageNet (Tan y Le, 2019) con una cabeza nueva `Dropout(0.3) + Linear(1280, 3)`. Se eligió sobre ResNet50 (He et al., 2016): entrena más rápido y sus pesos (~16 MB) caben en el repositorio. Kornblith et al. (2019) respaldan la transferencia desde ImageNet.
 
-**Entrenamiento en dos etapas.** Etapa 1: *backbone* congelado, AdamW con *learning rate* 1e-3, 3 épocas. Etapa 2: se descongelan los dos últimos bloques, *learning rate* 1e-4, hasta 5 épocas con parada temprana (paciencia 3) sobre el F1 macro de validación. Pérdida de entropía cruzada con pesos de clase, semillas fijas. Transformaciones de entrenamiento: `RandomResizedCrop(224, scale=(0.7, 1))` y `ColorJitter` leve, **sin volteo horizontal** (invierte texto y QR); validación y prueba con `Resize(256)` + `CenterCrop(224)` y normalización de ImageNet. Dispositivo: [[DISPOSITIVO]].
+**Entrenamiento en dos etapas.** Etapa 1: *backbone* congelado, AdamW con *learning rate* 1e-3, 3 épocas. Etapa 2: se descongelan los dos últimos bloques, *learning rate* 1e-4, hasta 5 épocas con parada temprana (paciencia 3) sobre el F1 macro de validación. Pérdida de entropía cruzada con pesos de clase, semillas fijas. Transformaciones de entrenamiento: `RandomResizedCrop(224, scale=(0.7, 1))` y `ColorJitter` leve, **sin volteo horizontal** (invierte texto y QR); validación y prueba con `Resize(256)` + `CenterCrop(224)` y normalización de ImageNet. Dispositivo: MacBook Air M3 con MPS; el entrenamiento completo (8 épocas) tardó **257 s**. Parámetros: lote de 32, semilla 42.
 
 # 7. Integración multimodal
 
@@ -173,9 +173,73 @@ El ML recupera evasiones que las reglas no ven (paráfrasis, texto en francés, 
 
 **Fallos que ni el ML ni las reglas resuelven:** leetspeak (`1gn0r4 l4s 1nstrucc10nes…`, clasificada como benigno con probabilidad 0.71) y Base64 (`SWdub3Jh…`). No hay un paso de normalización de ofuscación ni de decodificación.
 
-[[8_3_CNN]]
+## 8.3 Clasificador visual (CNN)
 
-[[8_4_INTEGRACION]]
+**Curvas de entrenamiento.** La pérdida de entrenamiento bajó de 0.86 a 0.13 y la de validación de 0.65 a 0.24; el F1 macro de validación subió de 0.844 a 0.916 sin sobreajuste marcado (exactitud 0.957 en entrenamiento y 0.915 en validación). La descongelación del *backbone* en la etapa 2 aportó cerca de 4 puntos de F1 (0.878 al final de la etapa 1 frente a 0.916).
+
+![Curvas de entrenamiento de la CNN (la línea punteada separa las dos etapas)](../../evidencias/avance2/cnn_curvas.png){width=90%}
+
+**Prueba sintética** (270 imágenes, con fuentes y fondos no vistos): exactitud **0.915**, F1 macro **0.916**.
+
+| Clase | Precisión | Recall | F1 | n |
+|---|---:|---:|---:|---:|
+| codigo_qr | 1.00 | 0.90 | 0.95 | 90 |
+| foto_natural | 0.83 | 0.98 | 0.90 | 90 |
+| texto_incrustado | 0.94 | 0.87 | 0.90 | 90 |
+
+![Matriz de confusión, prueba sintética](../../evidencias/avance2/cnn_matriz_sintetico.png){width=60%}
+
+El error dominante es `texto_incrustado → foto_natural` (12 de 90, 13 %): texto pequeño o de bajo contraste que la red a 224 px no distingue del fondo. De los QR, 6 se pierden como foto y 3 como texto.
+
+**Prueba en imágenes reales** (22 imágenes públicas): exactitud **0.773**, F1 macro **0.739**.
+
+| Clase | Precisión | Recall | F1 | n |
+|---|---:|---:|---:|---:|
+| codigo_qr | 1.00 | 0.50 | 0.67 | 2 |
+| foto_natural | 0.75 | 0.75 | 0.75 | 8 |
+| texto_incrustado | 0.77 | 0.83 | 0.80 | 12 |
+
+![Matriz de confusión, imágenes reales](../../evidencias/avance2/cnn_matriz_real.png){width=60%}
+
+La brecha entre lo sintético (0.915) y lo real (0.773) es de 14 puntos y confirma que el conjunto sintético no cubre toda la variación del mundo real. Con n = 22 un solo acierto cambia la exactitud en 4.5 puntos, así que **la cifra es indicativa**. Los 5 errores:
+
+| Imagen | Real | Predicha (prob.) | Causa probable |
+|---|---|---|---|
+| ataque en pantalla 01 | texto | foto (0.53) | texto pequeño en un campo de chat |
+| ataque en pantalla 04 | texto | foto (0.66) | texto pequeño de bajo contraste |
+| foto con texto incidental 02 | foto | texto (0.99) | letrero con mucho texto (caso ambiguo) |
+| foto con texto incidental 04 | foto | texto (0.995) | letrero-mapa, caso ambiguo declarado |
+| QR difícil en caja de juego | QR | texto (0.83) | QR diminuto en ángulo y con poca luz, rodeado de texto |
+
+Los dos letreros no son errores de la red en sentido estricto: la frontera entre «foto con texto incidental» y «texto incrustado» es difusa cuando el texto domina el cuadro, y fue una decisión de etiquetado nuestra.
+
+
+## 8.4 Cascada multimodal en imágenes reales
+
+La cascada completa (CNN → QR/OCR → clasificador de texto) se evaluó sobre las mismas 22 imágenes, con la etiqueta binaria «riesgo esperado» (1 para las 9 imágenes con instrucciones de ataque, 0 para texto benigno, QR benigno y fotos). Se ejecutó en Google Colab (CPU, Python 3.13, ~2 min) con el modelo de la CNN y el clasificador del repositorio.
+
+| Métrica (n = 22) | Valor |
+|---|---:|
+| Exactitud de riesgo | **0.864** (19/22) |
+| Ataques detectados (recall) | 7/9 = 0.78 |
+| Falsos positivos (benignas marcadas) | 1 de 13 |
+| Falsos negativos (ataques no detectados) | 2 de 9 |
+| Precisión de la etiqueta de la CNN, solo | 0.773 |
+
+La exactitud del riesgo (0.864) supera a la de la CNN sola (0.773) porque **tres de los cinco errores de la CNN son inocuos**: cuando la red confunde una foto o un QR con texto, el OCR igualmente corre y el clasificador no marca riesgo. Los errores que sí cuestan son los que mandan un ataque a la rama de «foto natural», donde no se lee nada.
+
+![Evaluación de la cascada sobre las imágenes reales (captura de la ejecución, parte 1)](../../evidencias/avance2/capturas/cascada_reales_01_tabla.png){width=100%}
+
+![Evaluación de la cascada sobre las imágenes reales (captura de la ejecución, parte 2)](../../evidencias/avance2/capturas/cascada_reales_02_tabla.png){width=100%}
+
+**Hallazgos**
+
+1. **Falso negativo por la CNN (ataque en pantalla 04).** La red lo clasifica como foto con confianza 0.66, por encima del umbral de 0.60, y la cascada no ejecuta OCR. El modo `--estricto` (OCR siempre) lo evitaría, a costa de más cómputo; **no lo evaluamos** en esta entrega.
+2. **Falso negativo por el OCR (ataque en pantalla 01).** La red duda (0.53) y manda la imagen a OCR, pero EasyOCR devuelve texto corrupto («Inr n cootcs aneriares evela lucfotci…») y el clasificador no lo reconoce. El *stemming* y el TF-IDF no son robustos al ruido de OCR.
+3. **Falso positivo (texto benigno en pantalla).** El OCR lee una ventana de cuentas («Microsoft accoun indowi accour BssoM…»); el texto ruidoso cae en `excessive_agency` con el umbral de 0.30. Es el mismo compromiso entre recall y precisión del umbral de la sección 4.
+4. **QR.** Solo hay 2 QR reales. El de la pantalla se decodificó (URL `miatt.onelink.me`, sin señales de riesgo) y no se marcó; el QR difícil de la caja no se decodificó porque la CNN lo clasificó como texto. Con n = 2 **no se puede estimar** el desempeño de la rama de QR; los QR de ataque se probaron solo en las pruebas automáticas con imágenes digitales.
+5. **Categoría.** Las categorías que el clasificador asigna al texto de las imágenes de ataque no se validaron contra una etiqueta de referencia (p. ej. una nota «para el asistente de IA» salió como `system_prompt_leakage`). Reportamos únicamente la decisión binaria de riesgo.
+
 
 # 9. Métricas
 
@@ -183,7 +247,9 @@ El ML recupera evasiones que las reglas no ven (paráfrasis, texto en francés, 
 - **Preprocesamiento:** la lista blanca de *stopwords* aporta +7.4 puntos de F1 macro y las *stopwords* +9.9; el *stemming* +2.0.
 - **Representación:** TF-IDF de palabras supera a la bolsa de palabras en 19.2 puntos con SVC (0.584 frente a 0.392) y en 5.3 con ComplementNB y los n-gramas de caracteres no aportan (−0.3).
 - **Híbrido frente a reglas:** evasiones de 0/8 a 4/8 (5/8 en binario), a cambio de un falso positivo más en benignos frente a las reglas (8/10 frente a 9/10 en categoría).
-[[METRICAS_CNN]]
+- **CNN (EfficientNet-B0):** exactitud 0.915 / F1 macro 0.916 en prueba sintética; 0.773 / 0.739 en 22 imágenes reales (indicativo por n pequeño).
+- **Cascada multimodal:** exactitud de riesgo 0.864 en las 22 imágenes reales (7/9 ataques detectados, 1 falso positivo en 13 benignas).
+- **Entrenamiento:** 257 s en un MacBook Air M3 con MPS (8 épocas).
 
 # 10. Conclusiones
 
@@ -196,7 +262,10 @@ El ML recupera evasiones que las reglas no ven (paráfrasis, texto en francés, 
 3. **Brecha entre prueba interna y externa.** F1 0.809 (interno) y recall 0.72 en deepset: el modelo es conservador (precisión 1.00) y deja pasar el 28 % de los ataques de ese corpus.
 4. **Ofuscación sin resolver.** Leetspeak y Base64 siguen sin detectarse; los n-gramas de caracteres no ayudaron.
 5. **Confusión entre categorías vecinas.** `prompt_injection`, `jailbreak` y `system_prompt_leakage` se mezclan (p. ej. 12 inyecciones clasificadas como jailbreak).
-[[LIMITACIONES_CNN]]
+6. **Muestra real pequeña y con sesgo.** 22 imágenes (solo 2 QR); 9 de ellas generadas con IA. Todas las cifras reales son indicativas.
+7. **Brecha sintético-real de la CNN** (0.915 frente a 0.773) y texto pequeño de bajo contraste que la red no detecta.
+8. **OCR frágil.** El texto corrupto no lo reconoce el clasificador (TF-IDF con *stemming*); la CNN decide si se lee o no, así que un error de la red puede dejar pasar un ataque.
+9. **Evaluación en Colab con CPU** y sin las 3 fotos privadas; no se ejecutó el modo `--estricto` ni el experimento comparativo con ResNet50 (recortado por tiempo).
 
 **Acciones para la versión final (Avance 3).**
 
@@ -204,7 +273,8 @@ El ML recupera evasiones que las reglas no ven (paráfrasis, texto en francés, 
 - Más datos reales **en español** y datos reales para `indirect_injection` y las intenciones conversacionales.
 - Normalización de ofuscación (leetspeak, espaciado) y decodificación de Base64 antes de clasificar.
 - Calibración del modelo y umbral por categoría.
-- OCR más robusto o un modelo visión-lenguaje (p. ej. CLIP) para texto de bajo contraste.
+- OCR más robusto, o un modelo visión-lenguaje (p. ej. CLIP), para texto de bajo contraste, y evaluar el modo `--estricto`.
+- Más imágenes reales, con QR de ataque fotografiados, y el experimento de transferencia (ResNet50 y *backbone* congelado frente a *fine-tuning*).
 
 # 11. Referencias
 
