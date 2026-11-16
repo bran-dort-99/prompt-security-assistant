@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 
 ATAQUES = {"prompt_injection", "indirect_injection", "jailbreak", "system_prompt_leakage", "data_leakage", "excessive_agency"}
 UMBRAL_CNN = 0.60    # por debajo, se corre OCR/QR aunque la CNN diga "foto_natural"
-UMBRAL_TEXTO = 0.45  # igual que el umbral de respaldo del chatbot (D5)
+UMBRAL_TEXTO = 0.30  # igual que el umbral del chatbot (D5)
 ACORTADORES = {"bit.ly", "tinyurl.com", "t.co", "goo.gl", "is.gd", "cutt.ly", "ow.ly", "rebrand.ly", "shorturl.at"}
 RE_IP = re.compile(r"^\d{1,3}(\.\d{1,3}){3}$")
 

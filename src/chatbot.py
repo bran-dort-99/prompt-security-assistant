@@ -22,7 +22,7 @@ from src.nlp.preprocesamiento import _EN, _ES, _TOKENIZADOR, normalizar
 
 KB_POR_DEFECTO = Path(__file__).resolve().parent.parent / "data" / "knowledge_base.json"
 MODELO_TEXTO = Path(__file__).resolve().parent.parent / "models" / "clasificador_intenciones.joblib"
-UMBRAL = 0.45        # D5: por debajo de esta confianza el modelo de ML no decide y respaldan las reglas
+UMBRAL = 0.30        # D5: elegido por F1 en el test interno (0.92) y confirmado en deepset (F1 0.835); ver evidencias/avance2/texto_curva_umbral_*.csv
 UMBRAL_VETO = 0.75   # confianza con la que el ML (no-ataque) anula una coincidencia débil de reglas
 ATAQUES = {"prompt_injection", "indirect_injection", "jailbreak", "system_prompt_leakage", "data_leakage", "excessive_agency"}
 RE_IMAGEN = re.compile(r"^\s*(?:analiza|analizar|revisa|revisar|examina)\s+(?:(?:la|esta|mi)\s+)?imagen\s*:\s*(?P<ruta>.+?)\s*(?P<estricto>--estricto)?\s*$"
