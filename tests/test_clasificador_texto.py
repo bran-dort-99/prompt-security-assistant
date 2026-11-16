@@ -60,3 +60,10 @@ def test_guardar_y_cargar(tmp_path, modelo):
     ruta = tmp_path / "m.joblib"
     ct.guardar(modelo, ruta)
     assert ct.predecir("Gracias", ct.cargar(ruta))[0] in dt.ETIQUETAS
+
+
+def test_el_modelo_no_referencia_main_ni_funciones_locales(modelo):
+    """Regresión: entrenar con `python -m` dejaba `__main__._analizador` en el .joblib y no se podía cargar."""
+    import pickle
+
+    assert b"__main__" not in pickle.dumps(modelo)

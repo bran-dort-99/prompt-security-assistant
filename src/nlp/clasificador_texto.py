@@ -31,13 +31,10 @@ REPRESENTACIONES = ("bow", "tfidf", "tfidf+chars")
 CLASIFICADORES = ("cnb", "svc")
 
 
-def _analizador(texto: str, **kw) -> list[str]:
-    return preprocesar(texto, **kw)
-
-
 def construir_pipeline(representacion: str = "tfidf+chars", clasificador: str = "svc", *,
                        stopwords: bool = True, stemming: bool = True, lista_blanca: bool = True) -> Pipeline:
-    analizador = partial(_analizador, stopwords=stopwords, stemming=stemming, lista_blanca=lista_blanca)
+    # `preprocesar` vive en src.nlp.preprocesamiento: así el .joblib no referencia `__main__` al entrenar con `python -m`
+    analizador = partial(preprocesar, stopwords=stopwords, stemming=stemming, lista_blanca=lista_blanca)
     if representacion == "bow":
         vec = CountVectorizer(analyzer=analizador, ngram_range=(1, 1))
     elif representacion == "tfidf":
@@ -55,7 +52,7 @@ def construir_pipeline(representacion: str = "tfidf+chars", clasificador: str = 
     if clasificador == "cnb":
         clf = ComplementNB()
     elif clasificador == "svc":
-        clf = CalibratedClassifierCV(LinearSVC(C=1.0, class_weight="balanced"), cv=3)
+        clf = CalibratedClassifierCV(LinearSVC(C=1.0, class_weight="balanced", max_iter=10000), cv=3)
     else:
         raise ValueError(clasificador)
     return Pipeline([("vec", vec), ("clf", clf)])
@@ -222,6 +219,8 @@ def correr_todo(dataset: Path | None = None, evid: Path = EVID, modelo_salida: P
 
 
 if __name__ == "__main__":
+    from src.nlp.clasificador_texto import correr_todo  # el módulo real, no __main__ (picklable)
+
     r = correr_todo()
     print(json.dumps({k: v for k, v in r.items() if k != "test"}, indent=2, ensure_ascii=False))
     print("F1 macro test:", round(r["test"]["f1_macro"], 3))
