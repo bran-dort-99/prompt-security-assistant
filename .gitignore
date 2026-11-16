@@ -15,3 +15,6 @@ models/*.pt
 
 # Fotos con datos personales: solo local
 data/imagenes_reales/privadas/
+
+# venv local de Brandon
+prompt/
