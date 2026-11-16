@@ -106,18 +106,16 @@ def matriz_experimentos(train: pd.DataFrame, folds: int = 5) -> pd.DataFrame:
     # Agrupada por plantilla: sin esto la CV filtra plantillas entre folds e infla el F1 (0.96 vs ~0.56 en test).
     cv = StratifiedGroupKFold(n_splits=folds, shuffle=True, random_state=SEMILLA)
     # BoW (conteos sin normalizar) + SVC converge lento; el aviso es esperado y no afecta la comparación.
-    import os
     import warnings
 
     from sklearn.exceptions import ConvergenceWarning
 
     warnings.filterwarnings("ignore", category=ConvergenceWarning)
-    os.environ["PYTHONWARNINGS"] = "ignore::sklearn.exceptions.ConvergenceWarning"  # hereda a los procesos de n_jobs
     filas = []
     for rep in REPRESENTACIONES:
         for clf in CLASIFICADORES:
             puntajes = cross_val_score(construir_pipeline(rep, clf), train["texto"], train["etiqueta"],
-                                       cv=cv, groups=train["plantilla_id"], scoring="f1_macro", n_jobs=-1)
+                                       cv=cv, groups=train["plantilla_id"], scoring="f1_macro", n_jobs=1)
             filas.append({"representacion": rep, "clasificador": clf, "f1_macro_media": puntajes.mean(), "f1_macro_std": puntajes.std()})
     return pd.DataFrame(filas).sort_values("f1_macro_media", ascending=False).reset_index(drop=True)
 
@@ -142,6 +140,20 @@ def externo_binario(modelo: Pipeline, textos: list[str], etiquetas_bin: list[int
     pred = [int(predecir(t, modelo)[0] in ATAQUES) for t in textos]
     p, r, f, _ = precision_recall_fscore_support(etiquetas_bin, pred, average="binary", zero_division=0)
     return {"precision": float(p), "recall": float(r), "f1": float(f), "n": len(textos)}
+
+
+UMBRALES = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7]
+
+
+def curva_umbral(modelo: Pipeline, textos: list[str], es_ataque: list[int]) -> pd.DataFrame:
+    """Ataque/benigno según «etiqueta de ataque con probabilidad >= umbral» (misma regla que usa el chatbot)."""
+    pred = [predecir(t, modelo)[:2] for t in textos]
+    filas = []
+    for u in UMBRALES:
+        y = [int(et in ATAQUES and p >= u) for et, p in pred]
+        pr, rc, f1, _ = precision_recall_fscore_support(es_ataque, y, average="binary", zero_division=0)
+        filas.append({"umbral": u, "precision": pr, "recall": rc, "f1": f1})
+    return pd.DataFrame(filas)
 
 
 def cargar_externo_deepset() -> tuple[list[str], list[int]] | None:
@@ -215,6 +227,13 @@ def correr_todo(dataset: Path | None = None, evid: Path = EVID, modelo_salida: P
     ext = cargar_externo_deepset()
     if ext:
         salida["externo_deepset"] = externo_binario(modelo, *ext)
+
+    # umbral del chatbot (D5): se elige sobre el test interno (no sobre la batería) y se confirma en deepset
+    ct_int = curva_umbral(modelo, list(test["texto"]), [int(e in ATAQUES) for e in test["etiqueta"]])
+    ct_int.to_csv(evid / "texto_curva_umbral_interno.csv", index=False)
+    salida["umbral_sugerido_interno"] = float(ct_int.sort_values(["f1", "umbral"], ascending=[False, False]).iloc[0]["umbral"])
+    if ext:
+        curva_umbral(modelo, *ext).to_csv(evid / "texto_curva_umbral_deepset.csv", index=False)
 
     bat = bateria_ml(modelo)
     bat.to_csv(evid / "texto_bateria_ml.csv", index=False)
