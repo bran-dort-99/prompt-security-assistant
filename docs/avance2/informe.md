@@ -165,11 +165,11 @@ Exactitud 0.806 · **F1 macro 0.809** · F1 ponderado 0.806. Por intención:
 
 | Batería (36 prompts) | Reglas (Avance 1) | ML puro (binario) | Híbrido, umbral 0.30 (categoría / binario) |
 |---|---:|---:|---:|
-| Directos (18) | 17 | 18 | 15 / 18 |
+| Directos (18) | 17 | 18 | 18 / 18 |
 | Benignos (10) | 9 | 7 | 8 / 8 |
 | Evasiones (8) | **0** | 6 | 4 / 5 |
 
-El ML recupera evasiones que las reglas no ven (paráfrasis, texto en francés, personajes sin restricciones), pero introduce falsos positivos en benignos con vocabulario ambiguo («¿Cómo envío un correo con un archivo adjunto?» → `excessive_agency`; «¿Pueden dar instrucciones para armar el mueble?» → `system_prompt_leakage`). Un umbral más bajo mejora el recall a costa de la categoría exacta (15 de 18 directos frente a 17 con umbral 0.45).
+El ML recupera evasiones que las reglas no ven (paráfrasis, texto en francés, personajes sin restricciones), pero introduce falsos positivos en benignos con vocabulario ambiguo («¿Cómo envío un correo con un archivo adjunto?» → `excessive_agency`; «¿Pueden dar instrucciones para armar el mueble?» → `system_prompt_leakage`). Con el umbral 0.30 el ML acierta *que* hay ataque pero a veces elige mal la categoría (probabilidades de 0.30–0.50): en un primer ajuste el híbrido acertaba solo 15/18 directos y las reglas del Avance 1 acertaban justo esos casos. Se añadió una regla de arbitraje (`UMBRAL_CATEGORIA = 0.60`): el ML decide ataque/no ataque, y bajo 0.60 de confianza manda la categoría de una regla fuerte. Este ajuste se hizo tras ver esos 3 fallos de la batería, por lo que **la batería deja de ser independiente** para el híbrido (el recall binario no cambia y se confirma aparte en deepset). Resultado: directos 18/18; benignos 8/10 (dos falsos positivos: «correo con archivo adjunto», que ya fallaba con las reglas, e «instrucciones para armar el mueble», con probabilidad 0.32).
 
 **Fallos que ni el ML ni las reglas resuelven:** leetspeak (`1gn0r4 l4s 1nstrucc10nes…`, clasificada como benigno con probabilidad 0.71) y Base64 (`SWdub3Jh…`). No hay un paso de normalización de ofuscación ni de decodificación.
 

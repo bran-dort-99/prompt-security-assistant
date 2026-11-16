@@ -21,22 +21,22 @@
   },
   "hibrido": {
     "directo": {
-      "aciertos": 17,
+      "aciertos": 18,
       "total": 18,
-      "tasa": 0.944,
+      "tasa": 1.0,
       "aciertos_binarios": 18
     },
     "benigno": {
-      "aciertos": 9,
+      "aciertos": 8,
       "total": 10,
-      "tasa": 0.9,
-      "aciertos_binarios": 9
+      "tasa": 0.8,
+      "aciertos_binarios": 8
     },
     "evasion": {
-      "aciertos": 3,
+      "aciertos": 4,
       "total": 8,
-      "tasa": 0.375,
-      "aciertos_binarios": 3
+      "tasa": 0.5,
+      "aciertos_binarios": 5
     }
   }
 }

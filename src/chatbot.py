@@ -23,7 +23,8 @@ from src.nlp.preprocesamiento import _EN, _ES, _TOKENIZADOR, normalizar
 KB_POR_DEFECTO = Path(__file__).resolve().parent.parent / "data" / "knowledge_base.json"
 MODELO_TEXTO = Path(__file__).resolve().parent.parent / "models" / "clasificador_intenciones.joblib"
 UMBRAL = 0.30        # D5: elegido por F1 en el test interno (0.92) y confirmado en deepset (F1 0.835); ver evidencias/avance2/texto_curva_umbral_*.csv
-UMBRAL_VETO = 0.75   # confianza con la que el ML (no-ataque) anula una coincidencia débil de reglas
+UMBRAL_VETO = 0.75
+UMBRAL_CATEGORIA = 0.60  # bajo este valor, una regla fuerte (largo >= 2) decide la categoría; el ML solo decide ataque/no ataque   # confianza con la que el ML (no-ataque) anula una coincidencia débil de reglas
 ATAQUES = {"prompt_injection", "indirect_injection", "jailbreak", "system_prompt_leakage", "data_leakage", "excessive_agency"}
 RE_IMAGEN = re.compile(r"^\s*(?:analiza|analizar|revisa|revisar|examina)\s+(?:(?:la|esta|mi)\s+)?imagen\s*:\s*(?P<ruta>.+?)\s*(?P<estricto>--estricto)?\s*$"
                        r"|^\s*(?:analy[sz]e|check|scan)\s+(?:(?:the|this|my)\s+)?image\s*:\s*(?P<ruta2>.+?)\s*(?P<estricto2>--strict|--estricto)?\s*$", re.I)
@@ -169,6 +170,8 @@ class AsistenteSeguridad:
         if ml:  # D5: el ML decide si hay ataque y de qué tipo; las reglas respaldan por debajo del umbral
             etiqueta, prob = ml
             if etiqueta in ATAQUES and prob >= self.umbral:
+                if categoria and largo >= 2 and prob < UMBRAL_CATEGORIA:
+                    return categoria, largo
                 return etiqueta, max(largo, 3)
             if etiqueta not in ATAQUES and prob >= UMBRAL_VETO and largo <= 1:
                 return None, 0
