@@ -184,23 +184,23 @@ Contenido mínimo para "Altamente competente":
 - [x] `propios_es_en.csv` (todas las etiquetas propias, es/en).
 - [x] `dataset_texto.py` (descarga en Colab; en el workspace, funcionar solo con los propios).
 - [x] `clasificador_texto.py` + pruebas.
-- [ ] Notebook 01 en Colab → métricas, figuras, `.joblib` → commit.
+- [x] Notebook 01 en Colab → métricas, figuras, `.joblib` → commit.
 
 **Fase 2 — Chatbot híbrido (jue 12)**
 - [x] Integrar el clasificador en `responder()` (D5); conversaciones y batería en verde; tabla ML vs reglas.
 
 **Fase 3 — CNN (vie 13)**
 - [x] `generar_imagenes.py` + prueba de humo local.
-- [ ] Notebook 02 en Colab (GPU): generar, entrenar B0, evaluar sintético + real, experimento B → commit de métricas, figuras y pesos.
-- [ ] Brandon toma las ~30 fotos reales (pedírselas temprano).
+- [x] CNN entrenada en local (MPS) y evaluada en sintético y real (experimento B recortado) → métricas, figuras y pesos.
+- [x] Fotos reales: 22 públicas + 3 privadas (recorte de alcance: ~25 en lugar de ~30).
 
 **Fase 4 — Integración (sáb 14)**
 - [x] `multimodal.py` + comando en el chat + pruebas.
-- [ ] Notebook 03 con los 6 casos de extremo a extremo + evidencias.
+- [x] Notebook 03 con los 6 casos de extremo a extremo + evidencias.
 
 **Fase 5 — Documento (sáb 14 – dom 15)**
-- [ ] `informe.md` con las 11 secciones → PDF. Revisar contra la rúbrica, criterio por criterio.
-- [ ] Actualizar el README (cómo ejecutar el Avance 2).
+- [x] `informe.md` con las 11 secciones → PDF. Revisar contra la rúbrica, criterio por criterio.
+- [x] Actualizar el README (cómo ejecutar el Avance 2).
 - [ ] Verificación final: `pytest -v` en verde, los notebooks corren de principio a fin en Colab, las cifras del PDF coinciden con `evidencias/avance2/*.json`.
 
 ---
