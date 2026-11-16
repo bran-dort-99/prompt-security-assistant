@@ -21,6 +21,12 @@ from pathlib import Path
 from src.nlp.preprocesamiento import _EN, _ES, _TOKENIZADOR, normalizar
 
 KB_POR_DEFECTO = Path(__file__).resolve().parent.parent / "data" / "knowledge_base.json"
+MODELO_TEXTO = Path(__file__).resolve().parent.parent / "models" / "clasificador_intenciones.joblib"
+UMBRAL = 0.45        # D5: por debajo de esta confianza el modelo de ML no decide y respaldan las reglas
+UMBRAL_VETO = 0.75   # confianza con la que el ML (no-ataque) anula una coincidencia débil de reglas
+ATAQUES = {"prompt_injection", "indirect_injection", "jailbreak", "system_prompt_leakage", "data_leakage", "excessive_agency"}
+RE_IMAGEN = re.compile(r"^\s*(?:analiza|analizar|revisa|revisar|examina)\s+(?:(?:la|esta|mi)\s+)?imagen\s*:\s*(?P<ruta>.+?)\s*(?P<estricto>--estricto)?\s*$"
+                       r"|^\s*(?:analy[sz]e|check|scan)\s+(?:(?:the|this|my)\s+)?image\s*:\s*(?P<ruta2>.+?)\s*(?P<estricto2>--strict|--estricto)?\s*$", re.I)
 
 
 # Intenciones de cortesía: pierden frente a un ataque detectado en el mismo mensaje.
@@ -75,7 +81,11 @@ class Respuesta:
 
 
 class AsistenteSeguridad:
-    def __init__(self, kb_path: Path | str = KB_POR_DEFECTO) -> None:
+    def __init__(self, kb_path: Path | str = KB_POR_DEFECTO, modelo_texto="auto", umbral: float = UMBRAL, analizador_imagen=None) -> None:
+        """modelo_texto: "auto" (carga models/clasificador_intenciones.joblib si existe), None (solo reglas) o un pipeline."""
+        self.umbral = umbral
+        self.modelo_texto = self._cargar_modelo(modelo_texto)
+        self.analizador_imagen = analizador_imagen  # se crea al primer uso (carga perezosa de CNN/OCR)
         self.kb = json.loads(Path(kb_path).read_text(encoding="utf-8"))
         self.categorias = self.kb["categorias"]
         self._r_intencion = {
@@ -85,6 +95,22 @@ class AsistenteSeguridad:
         self._r_ataque = {c: [compilar(p) for p in d["patrones_ataque"]] for c, d in self.categorias.items()}
         self._r_consulta = {c: [compilar(p) for p in d["patrones_consulta"]] for c, d in self.categorias.items()}
         self.ultima_categoria: str | None = None  # contexto de la conversación
+
+    @staticmethod
+    def _cargar_modelo(modelo):
+        if modelo != "auto":
+            return modelo
+        if MODELO_TEXTO.exists():
+            from src.nlp.clasificador_texto import cargar
+            return cargar(MODELO_TEXTO)
+        return None
+
+    def _ml(self, texto: str) -> tuple[str, float] | None:
+        if self.modelo_texto is None:
+            return None
+        from src.nlp.clasificador_texto import predecir
+        et, p, _ = predecir(texto, self.modelo_texto)
+        return et, p
 
     # ---------- API pública ----------
     def reiniciar(self) -> None:
@@ -97,6 +123,8 @@ class AsistenteSeguridad:
         texto = texto.strip()
         if not texto:
             return self._fija("fuera_de_alcance")
+        if m := RE_IMAGEN.match(texto):
+            return self._analizar_imagen(m.group("ruta") or m.group("ruta2"), bool(m.group("estricto") or m.group("estricto2")))
         norma = normalizar(texto)
         r_msg = raices(texto)
 
@@ -136,7 +164,14 @@ class AsistenteSeguridad:
         r_msg = raices(texto) if r_msg is None else r_msg
         categoria, largo = mejor(self._r_ataque, r_msg)
         if RE_DAN.search(texto) and largo < 2:
-            return "jailbreak", 2
+            categoria, largo = "jailbreak", 2
+        ml = self._ml(texto)
+        if ml:  # D5: el ML decide si hay ataque y de qué tipo; las reglas respaldan por debajo del umbral
+            etiqueta, prob = ml
+            if etiqueta in ATAQUES and prob >= self.umbral:
+                return etiqueta, max(largo, 3)
+            if etiqueta not in ATAQUES and prob >= UMBRAL_VETO and largo <= 1:
+                return None, 0
         return categoria, largo
 
     def _categoria_consulta(self, r_msg: set[str]) -> str | None:
@@ -175,6 +210,33 @@ class AsistenteSeguridad:
             "Escribe «¿qué guardrail recomiendas?» para ver la lista completa."
         )
         return Respuesta("analizar_prompt", texto, categoria, True)
+
+    def _analizar_imagen(self, ruta: str, estricto: bool = False) -> Respuesta:
+        ruta = ruta.strip().strip("\"'«»")
+        if not Path(ruta).exists():
+            return Respuesta("analizar_imagen", f"No encuentro la imagen «{ruta}». Revisa la ruta e inténtalo de nuevo.", detectado=False)
+        from src.multimodal import AnalizadorImagen
+        if self.analizador_imagen is None:
+            self.analizador_imagen = AnalizadorImagen(clasificador=(lambda t: __import__("src.nlp.clasificador_texto", fromlist=["x"]).predecir(t, self.modelo_texto)) if self.modelo_texto else None)
+        self.analizador_imagen.estricto = estricto or self.analizador_imagen.estricto
+        res = self.analizador_imagen.analizar(ruta)
+        evidencia = ["Evidencia visual", f"- Clase de la CNN: {res.clase_cnn} ({res.prob_cnn:.0%})"]
+        if res.payload_qr:
+            evidencia.append(f"- Payload del QR: {res.payload_qr[:120]}")
+        if res.senales_url:
+            evidencia.append("- Señales de URL: " + ", ".join(res.senales_url))
+        if res.texto_extraido:
+            evidencia.append(f"- Texto extraído (OCR): «{res.texto_extraido[:160]}{'…' if len(res.texto_extraido) > 160 else ''}»")
+        if res.etiqueta_texto:
+            evidencia.append(f"- Intención del texto ({res.fuente_texto}): {res.etiqueta_texto} ({res.prob_texto:.0%})")
+        evidencia += [f"- Nota: {n}" for n in res.notas]
+        bloque = "\n".join(evidencia)
+        if res.riesgo and res.categoria:
+            base = self._resultado_ataque(res.categoria)
+            base.texto = base.texto.replace("Análisis del prompt", "Análisis de la imagen (vector: imagen)", 1) + "\n\n" + bloque
+            base.intencion = "analizar_imagen"
+            return base
+        return Respuesta("analizar_imagen", "Análisis de la imagen\nNo detecté instrucciones ni enlaces de riesgo en la imagen.\n\n" + bloque, detectado=False)
 
     def _lineas_controles(self, categoria: str) -> str:
         datos, ctl = self.categorias[categoria], self.kb["controles"]
@@ -240,6 +302,15 @@ class AsistenteSeguridad:
         else:
             return None
         return Respuesta("consultar_control", texto or self.kb["mensajes"]["control_desconocido"])
+
+
+def chat_con_imagen(texto: str, ruta_imagen: str, bot: "AsistenteSeguridad | None" = None) -> str:
+    """Colab/notebooks: analiza una imagen (p. ej. subida con files.upload()) y, si hay `texto`, responde también al mensaje."""
+    bot = bot or AsistenteSeguridad()
+    partes = [bot._analizar_imagen(ruta_imagen).texto]
+    if texto.strip():
+        partes.append(bot.responder(texto).texto)
+    return "\n\n".join(partes)
 
 
 def chatear() -> None:

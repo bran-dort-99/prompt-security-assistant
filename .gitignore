@@ -12,3 +12,6 @@ data/imagenes/
 data/intenciones/raw/
 models/*.pt
 !models/cnn_efficientnet_b0.pt
+
+# Fotos con datos personales: solo local
+data/imagenes_reales/privadas/

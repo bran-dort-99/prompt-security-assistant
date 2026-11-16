@@ -187,15 +187,15 @@ Contenido mínimo para "Altamente competente":
 - [ ] Notebook 01 en Colab → métricas, figuras, `.joblib` → commit.
 
 **Fase 2 — Chatbot híbrido (jue 12)**
-- [ ] Integrar el clasificador en `responder()` (D5); conversaciones y batería en verde; tabla ML vs reglas.
+- [x] Integrar el clasificador en `responder()` (D5); conversaciones y batería en verde; tabla ML vs reglas.
 
 **Fase 3 — CNN (vie 13)**
-- [ ] `generar_imagenes.py` + prueba de humo local.
+- [x] `generar_imagenes.py` + prueba de humo local.
 - [ ] Notebook 02 en Colab (GPU): generar, entrenar B0, evaluar sintético + real, experimento B → commit de métricas, figuras y pesos.
 - [ ] Brandon toma las ~30 fotos reales (pedírselas temprano).
 
 **Fase 4 — Integración (sáb 14)**
-- [ ] `multimodal.py` + comando en el chat + pruebas.
+- [x] `multimodal.py` + comando en el chat + pruebas.
 - [ ] Notebook 03 con los 6 casos de extremo a extremo + evidencias.
 
 **Fase 5 — Documento (sáb 14 – dom 15)**
@@ -208,6 +208,8 @@ Contenido mínimo para "Altamente competente":
 > Nota Fase 0: en el workspace `nltk.download('stopwords')` está bloqueado; `preprocesamiento.py` usa el corpus si existe y una lista de respaldo si no. En Colab se usa el corpus real (reportar cuál se usó en el informe).
 
 > Nota Fase 1: la CV del plan se hace **agrupada por `plantilla_id`**; sin agrupar daba F1 0.96 vs 0.56 en test (fuga de plantillas). Documentar en el informe. Notebook 01 creado; falta ejecutarlo en Colab y commitear sus artefactos.
+
+> Nota 15-nov: alcance recortado por tiempo (sin ResNet50, sin FigStep/MM-SafetyBench, ~500 imágenes/clase, 4–5 fuentes, experimento B opcional). Test real = fotos de Brandon + 9 imágenes generadas con IA (declarado). Fotos con datos personales en `data/imagenes_reales/privadas/` (gitignored).
 
 ## 10. Riesgos y planes B
 | Riesgo | Plan B |

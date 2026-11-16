@@ -11,8 +11,9 @@ from src.chatbot import AsistenteSeguridad
 RAIZ = Path(__file__).resolve().parent.parent
 
 
-def ejecutar() -> list[dict]:
-    bot = AsistenteSeguridad()
+def ejecutar(modelo_texto="auto") -> list[dict]:
+    """modelo_texto: "auto" (híbrido si existe el .joblib), None (solo reglas) o un pipeline."""
+    bot = AsistenteSeguridad(modelo_texto=modelo_texto)
     filas = []
     for item in json.loads((RAIZ / "data" / "bateria_prompts.json").read_text(encoding="utf-8")):
         bot.reiniciar()
@@ -29,8 +30,23 @@ def resumen(filas: list[dict]) -> dict:
     return {t: {"aciertos": a, "total": n, "tasa": round(a / n, 3)} for t, (a, n) in por_tipo.items()}
 
 
+def comparar() -> dict:
+    """Reglas (Avance 1) vs híbrido (ML + reglas) por tipo, y guarda los errores para el análisis."""
+    reglas, hibrido = ejecutar(None), ejecutar("auto")
+    ruta = RAIZ / "evidencias" / "avance2"; ruta.mkdir(parents=True, exist_ok=True)
+    with open(ruta / "bateria_reglas_vs_ml.csv", "w", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh); w.writerow(["tipo", "categoria_esperada", "reglas", "hibrido", "ok_reglas", "ok_hibrido", "prompt"])
+        for a, b in zip(reglas, hibrido):
+            w.writerow([a["tipo"], a["categoria"], a["obtenida"], b["obtenida"], int(a["ok"]), int(b["ok"]), a["prompt"]])
+    salida = {"reglas": resumen(reglas), "hibrido": resumen(hibrido)}
+    (ruta / "bateria_reglas_vs_ml.json").write_text(json.dumps(salida, ensure_ascii=False, indent=2), encoding="utf-8")
+    return salida
+
+
 if __name__ == "__main__":
-    filas = ejecutar()
+    if "--comparar" in sys.argv:
+        print(json.dumps(comparar(), ensure_ascii=False, indent=2)); raise SystemExit
+    filas = ejecutar(None if "--reglas" in sys.argv else "auto")
     for f in filas:
         print(f"[{'OK ' if f['ok'] else 'ERR'}] {f['tipo']:8} esperada={f['categoria']!s:22} obtenida={f['obtenida']!s:22} | {f['prompt'][:70]}")
     r = resumen(filas)
