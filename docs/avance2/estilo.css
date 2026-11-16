@@ -1,0 +1,14 @@
+body{font-family:"DejaVu Sans",Helvetica,Arial,sans-serif;font-size:10.5pt;line-height:1.45;color:#1a1a1a;max-width:none}
+h1{font-size:17pt;color:#12355b;border-bottom:2px solid #12355b;padding-bottom:3px;margin-top:26px;page-break-after:avoid}
+h2{font-size:13pt;color:#12355b;margin-top:18px;page-break-after:avoid}
+table{border-collapse:collapse;margin:10px 0;font-size:9.2pt;width:100%;page-break-inside:avoid}
+th{background:#12355b;color:#fff;padding:4px 7px;text-align:left}
+td{border:1px solid #c8d0da;padding:3px 7px}
+tr:nth-child(even) td{background:#f3f6fa}
+code{font-family:"DejaVu Sans Mono",monospace;font-size:8.6pt;background:#eef1f5;padding:0 3px}
+img{max-width:100%;display:block;margin:8px auto}
+figcaption{font-size:9pt;color:#555;text-align:center}
+header#title-block-header{text-align:center;margin-bottom:22px}
+h1.title{border:none;font-size:21pt;margin-bottom:2px}
+p.subtitle{font-size:11pt;color:#444;margin-top:0}
+p.author,p.date{margin:2px;color:#444}
