@@ -148,9 +148,17 @@ def principal():
     ap = argparse.ArgumentParser()
     ap.add_argument("--datos", default=str(RAIZ / "data" / "imagenes")); ap.add_argument("--reales", default=str(RAIZ / "data" / "imagenes_reales"))
     ap.add_argument("--backbone", default="efficientnet_b0"); ap.add_argument("--ep1", type=int, default=3); ap.add_argument("--ep2", type=int, default=5)
-    ap.add_argument("--batch", type=int, default=32); ap.add_argument("--workers", type=int, default=4); ap.add_argument("--evid", default=str(EVID))
+    ap.add_argument("--batch", type=int, default=32); ap.add_argument("--workers", type=int, default=4); ap.add_argument("--evid", default=str(EVID)); ap.add_argument("--solo-reales", action="store_true", help="no reentrena: evalúa el modelo guardado en las fotos reales y actualiza cnn_metricas.json")
     a = ap.parse_args()
     evid = Path(a.evid); evid.mkdir(parents=True, exist_ok=True)
+    if a.solo_reales:
+        m, clases = M.cargar(M.RUTA_MODELO, M.dispositivo()); dev = M.dispositivo()
+        ruta = evid / "cnn_metricas.json"; out = json.loads(ruta.read_text(encoding="utf-8"))
+        mr, errores, n = evaluar_reales(m, Path(a.reales), clases, dev)
+        out["test_real"] = {"n": n, **mr, "errores": errores}
+        figura_matriz(mr["matriz"], clases, f"CNN · test real (n={n})", evid / "cnn_matriz_real.png")
+        ruta.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
+        print("accuracy real:", round(mr["accuracy"], 3), "n =", n); print("errores:", errores); return
     t0 = time.time()
     m, ds, hist = entrenar(Path(a.datos), a.backbone, a.ep1, a.ep2, a.batch, a.workers)
     dev = M.dispositivo(); clases = ds["train"].classes
