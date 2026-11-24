@@ -1,0 +1,9 @@
+# Componente visual y multimodal (Avance 2). En Colab ya vienen torch/torchvision.
+-r requirements.txt
+pillow
+qrcode[pil]
+opencv-python-headless
+datasets          # solo para descargar corpus en Colab
+torch
+torchvision
+easyocr

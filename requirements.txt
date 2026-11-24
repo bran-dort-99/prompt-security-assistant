@@ -1,2 +1,5 @@
 nltk>=3.8
-pytest>=7
+scikit-learn>=1.4
+pandas
+joblib
+matplotlib

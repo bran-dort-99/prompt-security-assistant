@@ -69,10 +69,10 @@ CONVERSACIONES: dict[str, list[tuple[str, str, str | None]]] = {
 }
 
 
-def ejecutar() -> list[dict]:
+def ejecutar(modelo_texto="auto") -> list[dict]:
     resultados = []
     for nombre, turnos in CONVERSACIONES.items():
-        bot = AsistenteSeguridad()
+        bot = AsistenteSeguridad(modelo_texto=modelo_texto)
         detalle = []
         for mensaje, intencion_esp, categoria_esp in turnos:
             r = bot.responder(mensaje)

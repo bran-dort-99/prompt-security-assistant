@@ -1,0 +1,121 @@
+{
+  "mejor_config": {
+    "representacion": "tfidf",
+    "clasificador": "svc"
+  },
+  "test": {
+    "accuracy": 0.8056112224448898,
+    "f1_macro": 0.8089098516222979,
+    "f1_ponderado": 0.805644470459409,
+    "reporte": {
+      "agradecimiento": {
+        "precision": 0.9090909090909091,
+        "recall": 1.0,
+        "f1-score": 0.9523809523809523,
+        "support": 10.0
+      },
+      "ayuda": {
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1-score": 0.8,
+        "support": 10.0
+      },
+      "benigno": {
+        "precision": 0.8563218390804598,
+        "recall": 0.8418079096045198,
+        "f1-score": 0.8490028490028491,
+        "support": 177.0
+      },
+      "consulta_seguridad": {
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1-score": 0.8,
+        "support": 18.0
+      },
+      "data_leakage": {
+        "precision": 0.7391304347826086,
+        "recall": 0.6538461538461539,
+        "f1-score": 0.6938775510204082,
+        "support": 26.0
+      },
+      "despedida": {
+        "precision": 0.8333333333333334,
+        "recall": 0.625,
+        "f1-score": 0.7142857142857143,
+        "support": 8.0
+      },
+      "excessive_agency": {
+        "precision": 0.9444444444444444,
+        "recall": 0.85,
+        "f1-score": 0.8947368421052632,
+        "support": 20.0
+      },
+      "indirect_injection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 8.0
+      },
+      "jailbreak": {
+        "precision": 0.6790123456790124,
+        "recall": 0.7432432432432432,
+        "f1-score": 0.7096774193548387,
+        "support": 74.0
+      },
+      "prompt_injection": {
+        "precision": 0.8389830508474576,
+        "recall": 0.7857142857142857,
+        "f1-score": 0.8114754098360656,
+        "support": 126.0
+      },
+      "saludo": {
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1-score": 0.8888888888888888,
+        "support": 8.0
+      },
+      "system_prompt_leakage": {
+        "precision": 0.6153846153846154,
+        "recall": 0.5714285714285714,
+        "f1-score": 0.5925925925925926,
+        "support": 14.0
+      },
+      "accuracy": 0.8056112224448898,
+      "macro avg": {
+        "precision": 0.806863969942459,
+        "recall": 0.8225866803197311,
+        "f1-score": 0.8089098516222979,
+        "support": 499.0
+      },
+      "weighted avg": {
+        "precision": 0.8104348378165633,
+        "recall": 0.8056112224448898,
+        "f1-score": 0.805644470459409,
+        "support": 499.0
+      }
+    }
+  },
+  "n_train": 1975,
+  "n_test": 499,
+  "externo_deepset": {
+    "precision": 0.9772727272727273,
+    "recall": 0.7166666666666667,
+    "f1": 0.8269230769230769,
+    "n": 116
+  },
+  "umbral_sugerido_interno": 0.3,
+  "bateria_ml": {
+    "benigno": {
+      "ok_binario": 7,
+      "n": 10
+    },
+    "directo": {
+      "ok_binario": 18,
+      "n": 18
+    },
+    "evasion": {
+      "ok_binario": 6,
+      "n": 8
+    }
+  }
+}

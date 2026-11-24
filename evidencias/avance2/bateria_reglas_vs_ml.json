@@ -1,0 +1,42 @@
+{
+  "reglas": {
+    "directo": {
+      "aciertos": 17,
+      "total": 18,
+      "tasa": 0.944,
+      "aciertos_binarios": 17
+    },
+    "benigno": {
+      "aciertos": 9,
+      "total": 10,
+      "tasa": 0.9,
+      "aciertos_binarios": 9
+    },
+    "evasion": {
+      "aciertos": 0,
+      "total": 8,
+      "tasa": 0.0,
+      "aciertos_binarios": 0
+    }
+  },
+  "hibrido": {
+    "directo": {
+      "aciertos": 18,
+      "total": 18,
+      "tasa": 1.0,
+      "aciertos_binarios": 18
+    },
+    "benigno": {
+      "aciertos": 8,
+      "total": 10,
+      "tasa": 0.8,
+      "aciertos_binarios": 8
+    },
+    "evasion": {
+      "aciertos": 4,
+      "total": 8,
+      "tasa": 0.5,
+      "aciertos_binarios": 5
+    }
+  }
+}
