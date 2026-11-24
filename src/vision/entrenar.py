@@ -23,7 +23,7 @@ from torchvision import datasets
 from src.vision import modelo as M
 
 RAIZ = Path(__file__).resolve().parent.parent.parent
-EVID = RAIZ / "evidencias" / "avance2"
+EVID = RAIZ / "evidencias" / "final"
 
 
 def fijar_semillas(s: int = 42) -> None:

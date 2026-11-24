@@ -1,0 +1,115 @@
+{
+  "mejor_config": {
+    "representacion": "tfidf+chars",
+    "clasificador": "svc"
+  },
+  "test": {
+    "accuracy": 0.7925925925925926,
+    "f1_macro": 0.7344379068648852,
+    "f1_ponderado": 0.7800292400779919,
+    "reporte": {
+      "agradecimiento": {
+        "precision": 1.0,
+        "recall": 0.9,
+        "f1-score": 0.9473684210526315,
+        "support": 10.0
+      },
+      "ayuda": {
+        "precision": 0.5,
+        "recall": 0.125,
+        "f1-score": 0.2,
+        "support": 8.0
+      },
+      "benigno": {
+        "precision": 0.7788018433179723,
+        "recall": 0.9037433155080213,
+        "f1-score": 0.8366336633663366,
+        "support": 187.0
+      },
+      "consulta_seguridad": {
+        "precision": 0.6875,
+        "recall": 1.0,
+        "f1-score": 0.8148148148148148,
+        "support": 22.0
+      },
+      "data_leakage": {
+        "precision": 0.8,
+        "recall": 0.46153846153846156,
+        "f1-score": 0.5853658536585366,
+        "support": 26.0
+      },
+      "despedida": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 10.0
+      },
+      "excessive_agency": {
+        "precision": 0.5,
+        "recall": 0.14285714285714285,
+        "f1-score": 0.2222222222222222,
+        "support": 14.0
+      },
+      "indirect_injection": {
+        "precision": 1.0,
+        "recall": 0.875,
+        "f1-score": 0.9333333333333333,
+        "support": 8.0
+      },
+      "jailbreak": {
+        "precision": 0.6923076923076923,
+        "recall": 0.627906976744186,
+        "f1-score": 0.6585365853658537,
+        "support": 86.0
+      },
+      "prompt_injection": {
+        "precision": 0.8682170542635659,
+        "recall": 0.8235294117647058,
+        "f1-score": 0.8452830188679246,
+        "support": 136.0
+      },
+      "saludo": {
+        "precision": 1.0,
+        "recall": 0.875,
+        "f1-score": 0.9333333333333333,
+        "support": 8.0
+      },
+      "system_prompt_leakage": {
+        "precision": 0.7666666666666667,
+        "recall": 0.92,
+        "f1-score": 0.8363636363636363,
+        "support": 25.0
+      },
+      "accuracy": 0.7925925925925926,
+      "macro avg": {
+        "precision": 0.7994577713796581,
+        "recall": 0.7212146090343765,
+        "f1-score": 0.7344379068648852,
+        "support": 540.0
+      },
+      "weighted avg": {
+        "precision": 0.7876733190471,
+        "recall": 0.7925925925925926,
+        "f1-score": 0.7800292400779919,
+        "support": 540.0
+      }
+    }
+  },
+  "n_train": 2155,
+  "n_test": 540,
+  "umbral_sugerido_interno": 0.25,
+  "bateria_ml": {
+    "benigno": {
+      "ok_binario": 7,
+      "n": 10
+    },
+    "directo": {
+      "ok_binario": 18,
+      "n": 18
+    },
+    "evasion": {
+      "ok_binario": 7,
+      "n": 8
+    }
+  }
+}

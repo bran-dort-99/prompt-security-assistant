@@ -18,6 +18,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from src.nlp.ofuscacion import ResultadoOfuscacion, desofuscar
 from src.nlp.preprocesamiento import _EN, _ES, _TOKENIZADOR, normalizar
 
 KB_POR_DEFECTO = Path(__file__).resolve().parent.parent / "data" / "knowledge_base.json"
@@ -79,12 +80,15 @@ class Respuesta:
     texto: str
     categoria: str | None = None
     detectado: bool | None = None  # solo para analizar_prompt
+    ofuscacion: list[str] | None = None  # técnicas de ofuscación detectadas (leetspeak, base64…)
 
 
 class AsistenteSeguridad:
     def __init__(self, kb_path: Path | str = KB_POR_DEFECTO, modelo_texto="auto", umbral: float = UMBRAL, analizador_imagen=None) -> None:
         """modelo_texto: "auto" (carga models/clasificador_intenciones.joblib si existe), None (solo reglas) o un pipeline."""
         self.umbral = umbral
+        self._ofuscacion: ResultadoOfuscacion | None = None
+        self._solo_ml_debil = False
         self.modelo_texto = self._cargar_modelo(modelo_texto)
         self.analizador_imagen = analizador_imagen  # se crea al primer uso (carga perezosa de CNN/OCR)
         self.kb = json.loads(Path(kb_path).read_text(encoding="utf-8"))
@@ -126,8 +130,9 @@ class AsistenteSeguridad:
             return self._fija("fuera_de_alcance")
         if m := RE_IMAGEN.match(texto):
             return self._analizar_imagen(m.group("ruta") or m.group("ruta2"), bool(m.group("estricto") or m.group("estricto2")))
+        self._ofuscacion = None
         norma = normalizar(texto)
-        r_msg = raices(texto)
+        r_msg = raices(desofuscar(texto).texto)
 
         # 1) Consulta de un control por su ID (LLM01, AML.T0051.001, MEASURE 2.7)
         control = self._control_por_id(norma)
@@ -146,7 +151,10 @@ class AsistenteSeguridad:
         if intencion in CORTESIA:
             return self._resultado_ataque(ataque) if ataque else self._fija(intencion)
         if intencion in CON_CATEGORIA:
-            if categoria_msg is None and ataque:
+            # Pregunta de seguimiento («¿a qué controles corresponde?») tras un análisis: con evidencia de ataque débil
+            # (solo ML, prob < UMBRAL_CATEGORIA, sin regla) manda la intención informativa y el contexto de la conversación.
+            seguimiento = self.ultima_categoria and self._solo_ml_debil
+            if categoria_msg is None and ataque and not seguimiento:
                 return self._resultado_ataque(ataque)
             return self._por_categoria(intencion, categoria_msg)
         if intencion:
@@ -162,16 +170,23 @@ class AsistenteSeguridad:
         return any(all(g & r_msg for g in regla) for regla in self._r_intencion[intencion])
 
     def _clasificar(self, texto: str, r_msg: set[str] | None = None) -> tuple[str | None, int]:
+        # Proyecto final: se revierte la ofuscación (leetspeak, Base64, espaciado, homoglifos) antes de reglas y ML.
+        ofs = desofuscar(texto)
+        if ofs.ofuscado:
+            self._ofuscacion = ofs
+            texto, r_msg = ofs.texto, raices(ofs.texto)
         r_msg = raices(texto) if r_msg is None else r_msg
         categoria, largo = mejor(self._r_ataque, r_msg)
         if RE_DAN.search(texto) and largo < 2:
             categoria, largo = "jailbreak", 2
+        self._solo_ml_debil = False
         ml = self._ml(texto)
         if ml:  # D5: el ML decide si hay ataque y de qué tipo; las reglas respaldan por debajo del umbral
             etiqueta, prob = ml
             if etiqueta in ATAQUES and prob >= self.umbral:
                 if categoria and largo >= 2 and prob < UMBRAL_CATEGORIA:
                     return categoria, largo
+                self._solo_ml_debil = not categoria and prob < UMBRAL_CATEGORIA
                 return etiqueta, max(largo, 3)
             if etiqueta not in ATAQUES and prob >= UMBRAL_VETO and largo <= 1:
                 return None, 0
@@ -212,7 +227,10 @@ class AsistenteSeguridad:
             f"Guardrails sugeridos:\n{guardrails}\n"
             "Escribe «¿qué guardrail recomiendas?» para ver la lista completa."
         )
-        return Respuesta("analizar_prompt", texto, categoria, True)
+        ofs = getattr(self, "_ofuscacion", None)
+        if ofs:
+            texto += f"\nOfuscación detectada: {', '.join(ofs.tecnicas)}. Texto analizado tras revertirla: «{ofs.texto[:160]}»."
+        return Respuesta("analizar_prompt", texto, categoria, True, ofs.tecnicas if ofs else None)
 
     def _analizar_imagen(self, ruta: str, estricto: bool = False) -> Respuesta:
         ruta = ruta.strip().strip("\"'«»")

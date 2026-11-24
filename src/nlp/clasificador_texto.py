@@ -23,7 +23,8 @@ from src.nlp.preprocesamiento import normalizar_texto, preprocesar
 
 RAIZ = Path(__file__).resolve().parent.parent.parent
 MODELO = RAIZ / "models" / "clasificador_intenciones.joblib"
-EVID = RAIZ / "evidencias" / "avance2"
+EVID = RAIZ / "evidencias" / "final"
+DEEPSET_CACHE = RAIZ / "data" / "intenciones" / "externo_deepset_test.csv"  # deepset test (Apache-2.0), cacheado tras la 1.ª descarga
 ATAQUES = {"prompt_injection", "indirect_injection", "jailbreak", "system_prompt_leakage", "data_leakage", "excessive_agency"}
 SEMILLA = 42
 
@@ -157,10 +158,14 @@ def curva_umbral(modelo: Pipeline, textos: list[str], es_ataque: list[int]) -> p
 
 
 def cargar_externo_deepset() -> tuple[list[str], list[int]] | None:
+    if DEEPSET_CACHE.exists():
+        d = pd.read_csv(DEEPSET_CACHE)
+        return d["text"].tolist(), d["label"].tolist()
     try:
         from datasets import load_dataset
 
         d = load_dataset("deepset/prompt-injections", split="test")
+        pd.DataFrame({"text": d["text"], "label": d["label"]}).to_csv(DEEPSET_CACHE, index=False)
         return list(d["text"]), list(d["label"])
     except Exception as e:  # noqa: BLE001
         print("Test externo (deepset) no disponible:", type(e).__name__)

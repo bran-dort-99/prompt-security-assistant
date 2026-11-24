@@ -171,7 +171,12 @@ class AnalizadorImagen:
 
         # decisión: se queda el texto con mayor probabilidad de ataque
         mejor: tuple[str, str, float] | None = None
+        from src.nlp.ofuscacion import desofuscar
         for fuente, t in textos:
+            ofs = desofuscar(t)
+            if ofs.ofuscado:
+                r.notas.append(f"Ofuscación en {fuente}: {', '.join(ofs.tecnicas)}")
+                t = ofs.texto
             et, p, probs_t = self.clasificador(t)
             if et in ATAQUES and p >= self.umbral_texto and (mejor is None or p > mejor[2]):
                 mejor = (fuente, et, p)

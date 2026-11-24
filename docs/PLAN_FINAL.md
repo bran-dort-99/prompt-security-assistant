@@ -4,6 +4,11 @@
 > **Fecha límite supuesta: domingo 6-dic-2026, 23:59 CDMX** (Semana 8 = 30-nov a 6-dic). Confirmar en la plataforma.
 > Semana 8 se reserva para revisar, integrar y entregar: **todo lo funcional debe estar listo el domingo 29-nov.**
 
+## Feedback del Avance 2 (profesor)
+1. Detectar ofuscación (leetspeak y Base64) → **hecho** (Fase A).
+2. Ampliar ejemplos en español → **hecho** (Fase A).
+3. Reforzar la frontera prompt_injection / jailbreak / system_prompt_leakage → **hecho** (Fase A); quedan errores en inglés parafraseado.
+
 ## 0. Decisiones (confirmar o cambiar antes del martes 24)
 
 | ID | Decisión | Propuesta | Por qué |
@@ -13,7 +18,7 @@
 | F3 | Túnel | **Named tunnel** con dominio propio si tienes uno en Cloudflare; si no, *quick tunnel* (`trycloudflare.com`) y la URL se actualiza en `st.secrets` antes de la demo | El *quick tunnel* cambia de URL en cada arranque |
 | F4 | Tipo de agente | **Híbrido**: capa reactiva (guardrails y reglas inmediatas) + capa deliberativa (planificador que elige herramientas y encadena pasos) | Encaja con lo que ya existe: reglas del Avance 1 = reactivo, cascada multimodal = plan de varios pasos |
 | F5 | ¿LLM dentro del agente? | **No en el núcleo.** Planificador determinista y explicable. LLM solo como mejora futura | Sin costo, reproducible, más fácil de justificar en ética y en pruebas |
-| F6 | Mejoras de modelos | Solo las de **mayor retorno**: normalización de leetspeak/Base64, más ejemplos en español, QR sin fondo en el sintético, modo `--estricto` evaluado. ResNet50 solo si sobra tiempo | Atacan las limitaciones medidas en el Avance 2 |
+| F6 | Mejoras de modelos | **Feedback del profesor (obligatorio):** detección de ofuscación (leetspeak/Base64), más español, frontera prompt_injection / jailbreak / system_prompt_leakage. Además: QR sin fondo en el sintético y modo `--estricto` evaluado. ResNet50 solo si sobra tiempo | Lo pidió el profesor y ataca las limitaciones medidas en el Avance 2 |
 
 ## 1. Arquitectura objetivo
 
@@ -62,8 +67,10 @@ UX del dominio: lenguaje de analista de seguridad, severidad con color, botón d
 - [ ] Confirmar decisiones F1–F6 y la fecha límite real.
 - [ ] Rama `final` desde `avance-2`; merge de `avance-2` a `main` para que el repo público muestre el trabajo.
 - [ ] Recuperar y corregir: problema, objetivo, usuarios, alcance, arquitectura (incluir la corrección «la CNN clasifica el vector, no la intención»).
-- [ ] Normalización de ofuscación (leetspeak, espaciado, Base64 decodificado) antes de clasificar + pruebas.
-- [ ] +~150 ejemplos en español (plantillas + paráfrasis) y reentrenar el clasificador; re-medir batería y deepset.
+- [x] Normalización de ofuscación (`src/nlp/ofuscacion.py`: leetspeak, espaciado, Base64, hex, URL, homoglifos, ancho cero) + 17 pruebas. *(feedback)*
+- [x] +221 ejemplos propios (207 en español) y reentreno; guía de etiquetado de la frontera. *(feedback)*
+- [x] Prueba de frontera escrita a mano (60) + `src/nlp/evaluar_final.py` (Avance 2 vs final). Resultados: `docs/final/resultados_fase_a.md`.
+- [ ] Correr `python -m src.nlp.evaluar_final` y `python -m src.nlp.clasificador_texto` en el Mac (con red) para deepset y deepset ofuscado.
 
 ### Fase B — Agente + API (mié 25 – jue 26)
 - [ ] `src/agente/`: estado, registro de herramientas, capa reactiva, planificador, re-planificación, traza.

@@ -24,7 +24,8 @@ DIR = RAIZ / "data" / "intenciones"
 PROPIOS = DIR / "propios_es_en.csv"
 DATASET = DIR / "dataset.csv"
 BATERIA = RAIZ / "data" / "bateria_prompts.json"
-RESUMEN = RAIZ / "evidencias" / "avance2" / "dataset_resumen.csv"
+FRONTERA = DIR / "frontera_es_en.csv"  # prueba de frontera (proyecto final): nunca entra al entrenamiento
+RESUMEN = RAIZ / "evidencias" / "final" / "dataset_resumen.csv"
 SEMILLA = 42
 
 ETIQUETAS = [
@@ -57,6 +58,8 @@ def exclusiones(extra: set[str] | None = None) -> set[str]:
     if BATERIA.exists():
         for item in json.loads(BATERIA.read_text(encoding="utf-8")):
             claves.add(_clave(item["prompt"]))
+    if FRONTERA.exists():
+        claves |= {_clave(t) for t in pd.read_csv(FRONTERA)["texto"]}
     return claves
 
 
@@ -127,10 +130,14 @@ def particionar(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def construir(con_red: bool = True) -> pd.DataFrame:
+def construir(con_red: bool = True, reusar_publicos: bool = False) -> pd.DataFrame:
     partes = [cargar_propios()]
     excluir_extra: set[str] = set()
-    if con_red:
+    if reusar_publicos and DATASET.exists():
+        # Sin red: reutiliza las filas públicas ya descargadas en dataset.csv y regenera solo las propias.
+        previo = pd.read_csv(DATASET)
+        partes.append(previo[previo["fuente"] != "propio"].drop(columns=["split"], errors="ignore"))
+    elif con_red:
         try:
             pub, excluir_extra = descargar_publicos()
             partes.append(pub)
@@ -155,7 +162,8 @@ def guardar(df: pd.DataFrame) -> None:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--sin-red", action="store_true")
+    ap.add_argument("--reusar-publicos", action="store_true", help="sin red: reutiliza las filas públicas de dataset.csv")
     a = ap.parse_args()
-    d = construir(con_red=not a.sin_red)
+    d = construir(con_red=not a.sin_red, reusar_publicos=a.reusar_publicos)
     guardar(d)
     print(d.groupby(["etiqueta", "split"]).size().unstack(fill_value=0))

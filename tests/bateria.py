@@ -36,7 +36,7 @@ def resumen(filas: list[dict]) -> dict:
 def comparar() -> dict:
     """Reglas (Avance 1) vs híbrido (ML + reglas) por tipo, y guarda los errores para el análisis."""
     reglas, hibrido = ejecutar(None), ejecutar("auto")
-    ruta = RAIZ / "evidencias" / "avance2"; ruta.mkdir(parents=True, exist_ok=True)
+    ruta = RAIZ / "evidencias" / "final"; ruta.mkdir(parents=True, exist_ok=True)
     with open(ruta / "bateria_reglas_vs_ml.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh); w.writerow(["tipo", "categoria_esperada", "reglas", "hibrido", "ok_reglas", "ok_hibrido", "prompt"])
         for a, b in zip(reglas, hibrido):
@@ -48,7 +48,7 @@ def comparar() -> dict:
 
 def barrido_umbral(umbrales=(0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7)) -> list[dict]:
     """Híbrido por umbral. Solo para análisis de sensibilidad: el umbral NO se ajusta sobre la batería de evaluación."""
-    ruta = RAIZ / "evidencias" / "avance2"; ruta.mkdir(parents=True, exist_ok=True)
+    ruta = RAIZ / "evidencias" / "final"; ruta.mkdir(parents=True, exist_ok=True)
     filas = []
     for u in umbrales:
         r = resumen(ejecutar("auto", u))
